@@ -1,0 +1,5 @@
+﻿node_modules/
+.next/
+*.zip
+*.tar
+.DS_Store
