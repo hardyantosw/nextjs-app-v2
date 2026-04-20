@@ -186,7 +186,8 @@ export async function DELETE(
       }
       if (dokumen.pathFileTtd && fs.existsSync(dokumen.pathFileTtd)) {
         fs.unlinkSync(dokumen.pathFileTtd);
-      }) {
+      }
+      if (dokumen.pathFileAsli) {
         await deleteFile(dokumen.pathFileAsli).catch(() => {
           // Silently ignore if file doesn't exist
         });
@@ -203,7 +204,12 @@ export async function DELETE(
       // Clean up TTE stamp/image
       await deleteFile(`tte-images/${dokumen.tokenVerifikasi}.png`).catch(() => {
         // Silently ignore if file doesn't exist
-      });Delete from database
+      });
+    } catch (error) {
+      console.warn('Error cleaning dokumen files:', error);
+    }
+
+    // Delete from database
     await db.dokumen.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
