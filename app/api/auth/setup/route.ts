@@ -4,6 +4,19 @@ import { hashPassword } from '@/lib/auth';
 
 export async function POST() {
   try {
+    // Check if DATABASE_URL is configured
+    if (!process.env.DATABASE_URL) {
+      console.error('DATABASE_URL not configured');
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Database tidak terkonfigurasi',
+          detail: 'DATABASE_URL harus diset di environment variables'
+        },
+        { status: 503 }
+      );
+    }
+
     // Check if any user exists
     const userCount = await db.user.count();
 
@@ -37,7 +50,23 @@ export async function POST() {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const isDatabaseError = errorMessage.includes('ECONNREFUSED') || 
+                            errorMessage.includes('PrismaClientInitializationError') ||
+                            errorMessage.includes('getaddrinfo');
+    
     console.error('Setup error:', errorMessage, error);
+    
+    if (isDatabaseError) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Database connection error',
+          detail: 'Pastikan DATABASE_URL sudah diset dengan benar di Vercel Environment Variables'
+        },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: 'Terjadi kesalahan pada server', detail: errorMessage },
       { status: 500 }
