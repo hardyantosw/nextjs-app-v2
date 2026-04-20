@@ -6,8 +6,7 @@ import {
   generateUniqueFilename,
   ensureUploadsDir,
 } from '@/lib/tte-utils';
-import fs from 'fs';
-import path from 'path';
+import { uploadFile, deleteFile } from '@/lib/storage';
 
 /**
  * GET /api/dokumen/[id]
@@ -111,13 +110,8 @@ export async function PUT(
 
     // Save uploaded file
     const signedFilename = generateUniqueFilename(file.name);
-    const signedDir = path.join(process.cwd(), 'uploads', 'signed');
-    if (!fs.existsSync(signedDir)) {
-      fs.mkdirSync(signedDir, { recursive: true });
-    }
-    const signedPath = path.join(signedDir, signedFilename);
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(signedPath, fileBuffer);
+    const signedPath = await uploadFile(`signed/${signedFilename}`, fileBuffer, { contentType: 'application/pdf' });
 
     // Calculate hash
     const hashFile = calculateBufferHash(fileBuffer);
@@ -192,22 +186,24 @@ export async function DELETE(
       }
       if (dokumen.pathFileTtd && fs.existsSync(dokumen.pathFileTtd)) {
         fs.unlinkSync(dokumen.pathFileTtd);
+      }) {
+        await deleteFile(dokumen.pathFileAsli).catch(() => {
+          // Silently ignore if file doesn't exist
+        });
+      }
+      if (dokumen.pathFileTtd) {
+        await deleteFile(dokumen.pathFileTtd).catch(() => {
+          // Silently ignore if file doesn't exist
+        });
       }
       // Clean up QR code
-      const qrPath = path.join(process.cwd(), 'uploads', 'qrcodes', `${dokumen.tokenVerifikasi}.png`);
-      if (fs.existsSync(qrPath)) {
-        fs.unlinkSync(qrPath);
-      }
-      // Clean up TTE stamp
-      const tteStampPath = path.join(process.cwd(), 'uploads', 'tte-stamps', `${dokumen.tokenVerifikasi}.png`);
-      if (fs.existsSync(tteStampPath)) {
-        fs.unlinkSync(tteStampPath);
-      }
-    } catch {
-      // Silently ignore file cleanup errors
-    }
-
-    // Delete from database
+      await deleteFile(`qrcodes/${dokumen.tokenVerifikasi}.png`).catch(() => {
+        // Silently ignore if file doesn't exist
+      });
+      // Clean up TTE stamp/image
+      await deleteFile(`tte-images/${dokumen.tokenVerifikasi}.png`).catch(() => {
+        // Silently ignore if file doesn't exist
+      });Delete from database
     await db.dokumen.delete({ where: { id } });
 
     return NextResponse.json({ success: true });

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs';
 import { db } from '@/lib/db';
 import { generateUniqueFilename, ensureUploadsDir } from '@/lib/tte-utils';
+import { uploadFile, deleteFile } from '@/lib/storage';
 
 /**
  * POST /api/pengaturan/logo
@@ -44,12 +43,11 @@ export async function POST(request: NextRequest) {
 
     // Generate unique filename
     const uniqueFilename = generateUniqueFilename(file.name);
-    const filePath = path.join(process.cwd(), 'uploads', 'logos', uniqueFilename);
 
-    // Save file to disk
+    // Save file to cloud storage
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(filePath, buffer);
+    const logoPath = await uploadFile(`logos/${uniqueFilename}`, buffer, { contentType: file.type });
 
     // Update pengaturan with new logo path
     let pengaturan = await db.pengaturan.findFirst();
@@ -63,19 +61,9 @@ export async function POST(request: NextRequest) {
     } else {
       // Delete old logo file if exists
       if (pengaturan.logoPath) {
-        const oldFilePath = path.join(
-          process.cwd(),
-          'uploads',
-          'logos',
-          pengaturan.logoPath
-        );
-        if (fs.existsSync(oldFilePath)) {
-          try {
-            fs.unlinkSync(oldFilePath);
-          } catch (err) {
-            console.error('Error deleting old logo:', err);
-          }
-        }
+        await deleteFile(`logos/${pengaturan.logoPath}`).catch(() => {
+          // Silently ignore if file doesn't exist
+        });
       }
 
       pengaturan = await db.pengaturan.update({

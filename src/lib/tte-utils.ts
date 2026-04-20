@@ -39,11 +39,13 @@ export function generateUniqueFilename(originalName: string): string {
 
 /**
  * Generate QR Code image with optional logo overlay
+ * @param data - Data to encode in QR code
+ * @param logoBuffer - Optional logo buffer (will be embedded in center of QR code)
+ * @returns Buffer containing PNG image
  */
 export async function generateQRCodeWithLogo(
   data: string,
-  outputPath: string,
-  logoPath?: string | null
+  logoBuffer?: Buffer | null
 ): Promise<Buffer> {
   // Generate QR code as PNG buffer
   const qrBuffer = await QRCode.toBuffer(data, {
@@ -57,64 +59,66 @@ export async function generateQRCodeWithLogo(
     errorCorrectionLevel: 'H', // High error correction to allow logo overlay
   });
 
-  if (logoPath && fs.existsSync(logoPath)) {
-    // Resize logo to fit in center (about 25% of QR code size)
-    const logoBuffer = await sharp(logoPath)
-      .resize(100, 100, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
-      .png()
-      .toBuffer();
+  if (logoBuffer) {
+    try {
+      // Resize logo to fit in center (about 25% of QR code size)
+      const resizedLogo = await sharp(logoBuffer)
+        .resize(100, 100, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+        .png()
+        .toBuffer();
 
-    // Create white background for logo area
-    const whiteBg = await sharp({
-      create: {
-        width: 110,
-        height: 110,
-        channels: 4,
-        background: { r: 255, g: 255, b: 255, alpha: 1 },
-      },
-    })
-      .png()
-      .toBuffer();
+      // Create white background for logo area
+      const whiteBg = await sharp({
+        create: {
+          width: 110,
+          height: 110,
+          channels: 4,
+          background: { r: 255, g: 255, b: 255, alpha: 1 },
+        },
+      })
+        .png()
+        .toBuffer();
 
-    // Composite logo onto white background
-    const logoWithBg = await sharp(whiteBg)
-      .composite([{ input: logoBuffer, top: 5, left: 5 }])
-      .png()
-      .toBuffer();
+      // Composite logo onto white background
+      const logoWithBg = await sharp(whiteBg)
+        .composite([{ input: resizedLogo, top: 5, left: 5 }])
+        .png()
+        .toBuffer();
 
-    // Get QR code dimensions
-    const qrMetadata = await sharp(qrBuffer).metadata();
-    const qrWidth = qrMetadata.width || 400;
-    const qrHeight = qrMetadata.height || 400;
+      // Get QR code dimensions
+      const qrMetadata = await sharp(qrBuffer).metadata();
+      const qrWidth = qrMetadata.width || 400;
+      const qrHeight = qrMetadata.height || 400;
 
-    // Calculate center position
-    const centerX = Math.floor((qrWidth - 110) / 2);
-    const centerY = Math.floor((qrHeight - 110) / 2);
+      // Calculate center position
+      const centerX = Math.floor((qrWidth - 110) / 2);
+      const centerY = Math.floor((qrHeight - 110) / 2);
 
-    // Composite logo onto QR code
-    const finalQR = await sharp(qrBuffer)
-      .composite([{ input: logoWithBg, top: centerY, left: centerX }])
-      .png()
-      .toBuffer();
+      // Composite logo onto QR code
+      const finalQR = await sharp(qrBuffer)
+        .composite([{ input: logoWithBg, top: centerY, left: centerX }])
+        .png()
+        .toBuffer();
 
-    if (outputPath) {
-      fs.writeFileSync(outputPath, finalQR);
+      return finalQR;
+    } catch (error) {
+      console.warn('Failed to embed logo in QR code, returning plain QR code', error);
+      return qrBuffer;
     }
-    return finalQR;
   }
 
-  if (outputPath) {
-    fs.writeFileSync(outputPath, qrBuffer);
-  }
   return qrBuffer;
 }
 
 /**
  * Sign a PDF document by adding QR code and signature text
+ * @param pdfBuffer - Buffer containing the PDF to sign
+ * @param qrImageBuffer - Buffer containing QR code image
+ * @param signerInfo - Information about the signer
+ * @returns Buffer containing the signed PDF
  */
 export async function signPDF(
-  inputPath: string,
-  outputPath: string,
+  pdfBuffer: Buffer,
   qrImageBuffer: Buffer,
   signerInfo: {
     nama: string;
@@ -123,9 +127,8 @@ export async function signPDF(
     opd: string;
     tanggal: string;
   }
-): Promise<void> {
-  const pdfBytes = fs.readFileSync(inputPath);
-  const pdfDoc = await PDFDocument.load(pdfBytes);
+): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.load(pdfBuffer);
 
   const pages = pdfDoc.getPages();
   const lastPage = pages[pages.length - 1];
@@ -188,9 +191,9 @@ export async function signPDF(
     borderWidth: 0.5,
   });
 
-  // Save signed PDF
+  // Save signed PDF and return buffer
   const signedPdfBytes = await pdfDoc.save();
-  fs.writeFileSync(outputPath, signedPdfBytes);
+  return signedPdfBytes;
 }
 
 /**

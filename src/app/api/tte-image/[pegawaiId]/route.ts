@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession, getTokenFromRequest } from '@/lib/auth';
 import { generateQRCodeWithLogo, generateVerificationToken, ensureUploadsDir } from '@/lib/tte-utils';
+import { uploadFile, downloadFile, fileExists } from '@/lib/storage';
 import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
 
 function escapeXml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -69,55 +68,54 @@ export async function GET(
       return NextResponse.json({ error: 'Pegawai tidak ditemukan' }, { status: 404 });
     }
 
-    ensureUploadsDir();
-    const tteImageDir = path.join(process.cwd(), 'uploads', 'tte-images');
-    if (!fs.existsSync(tteImageDir)) {
-      fs.mkdirSync(tteImageDir, { recursive: true });
-    }
-
     // 3. Check if TTE stamp already exists for this pegawai
     const existingStamp = await db.dokumen.findFirst({
       where: { pegawaiId, status: 'tte_stamp' },
     });
 
     let tokenVerifikasi: string;
-    let tteImagePath: string;
 
     if (existingStamp) {
       tokenVerifikasi = existingStamp.tokenVerifikasi;
-      tteImagePath = existingStamp.pathFileTtd || path.join(tteImageDir, `${existingStamp.tokenVerifikasi}.png`);
 
       // Check if qrcode=true query param is set
       const url = new URL(request.url);
       const isQrCodeOnly = url.searchParams.get('qrcode') === 'true';
 
       if (isQrCodeOnly) {
-        // Serve the QR code with logo from uploads/qrcodes/tte_{tokenVerifikasi}.png
-        const qrPath = path.join(process.cwd(), 'uploads', 'qrcodes', `tte_${tokenVerifikasi}.png`);
-        if (fs.existsSync(qrPath)) {
-          const fileBuffer = fs.readFileSync(qrPath);
-          return new NextResponse(fileBuffer, {
-            headers: {
-              'Content-Type': 'image/png',
-              'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
-              'Cache-Control': 'no-cache',
-            },
-          });
+        // Serve the QR code with logo
+        try {
+          const qrFileExists = await fileExists(`qrcodes/tte_${tokenVerifikasi}.png`);
+          if (qrFileExists) {
+            const qrBuffer = await downloadFile(`qrcodes/tte_${tokenVerifikasi}.png`);
+            return new NextResponse(qrBuffer, {
+              headers: {
+                'Content-Type': 'image/png',
+                'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
+                'Cache-Control': 'no-cache',
+              },
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to load QR code:', error);
+          // Continue below to generate QR code
         }
-
-        // Fallback: if the QR file doesn't exist yet, generate it
-        // Continue below to generate QR code
       } else {
         // Default: serve the composite TTE stamp
-        // If image file exists, serve it
-        if (fs.existsSync(tteImagePath)) {
-          const fileBuffer = fs.readFileSync(tteImagePath);
-          return new NextResponse(fileBuffer, {
-            headers: {
-              'Content-Type': 'image/png',
-              'Content-Disposition': `attachment; filename="TTE_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
-            },
-          });
+        try {
+          const tteFileExists = await fileExists(`tte-images/${existingStamp.tokenVerifikasi}.png`);
+          if (tteFileExists && existingStamp.pathFileTtd) {
+            const tteBuffer = await downloadFile(existingStamp.pathFileTtd);
+            return new NextResponse(tteBuffer, {
+              headers: {
+                'Content-Type': 'image/png',
+                'Content-Disposition': `attachment; filename="TTE_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
+              },
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to load TTE image:', error);
+          // Continue below to generate TTE image
         }
       }
     } else {
@@ -126,22 +124,27 @@ export async function GET(
 
     // 4. Generate QR code
     const verificationUrl = `/?verify=${tokenVerifikasi}`;
-    const qrOutputPath = path.join(process.cwd(), 'uploads', 'qrcodes', `tte_${tokenVerifikasi}.png`);
 
     const pengaturan = await db.pengaturan.findFirst();
-    let logoFullPath: string | null = null;
+    let logoBuffer: Buffer | null = null;
     if (pengaturan?.logoPath) {
-      logoFullPath = path.join(process.cwd(), 'uploads', 'logos', pengaturan.logoPath);
+      try {
+        logoBuffer = await downloadFile(pengaturan.logoPath);
+      } catch (error) {
+        console.warn('Failed to load logo:', error);
+        // Continue without logo
+      }
     }
 
-    const qrBuffer = await generateQRCodeWithLogo(verificationUrl, qrOutputPath, logoFullPath);
+    const qrBuffer = await generateQRCodeWithLogo(verificationUrl, logoBuffer);
 
     // Check if only QR code is requested
     const url = new URL(request.url);
     const isQrCodeOnly = url.searchParams.get('qrcode') === 'true';
 
     if (isQrCodeOnly) {
-      // Serve the QR code with logo only
+      // Upload and serve the QR code with logo only
+      await uploadFile(`qrcodes/tte_${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
       return new NextResponse(qrBuffer, {
         headers: {
           'Content-Type': 'image/png',
@@ -194,9 +197,9 @@ export async function GET(
       .png()
       .toBuffer();
 
-    // Save image
-    tteImagePath = path.join(tteImageDir, `${tokenVerifikasi}.png`);
-    fs.writeFileSync(tteImagePath, bordered);
+    // Upload images
+    const tteImagePath = await uploadFile(`tte-images/${tokenVerifikasi}.png`, bordered, { contentType: 'image/png' });
+    await uploadFile(`qrcodes/tte_${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
 
     // 6. Save to database (if not exists)
     if (!existingStamp) {

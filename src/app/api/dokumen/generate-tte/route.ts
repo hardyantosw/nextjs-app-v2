@@ -6,9 +6,8 @@ import {
   generateVerificationToken,
   ensureUploadsDir,
 } from '@/lib/tte-utils';
+import { uploadFile, downloadFile } from '@/lib/storage';
 import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
 
 function escapeXml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -83,27 +82,25 @@ export async function POST(request: NextRequest) {
 
     ensureUploadsDir();
 
-    // Create tte-stamps directory
-    const tteStampDir = path.join(process.cwd(), 'uploads', 'tte-stamps');
-    if (!fs.existsSync(tteStampDir)) {
-      fs.mkdirSync(tteStampDir, { recursive: true });
-    }
-
     // Generate verification token
     const tokenVerifikasi = generateVerificationToken();
 
     // Generate QR code
     const verificationUrl = `/?verify=${tokenVerifikasi}`;
-    const qrOutputPath = path.join(process.cwd(), 'uploads', 'qrcodes', `${tokenVerifikasi}.png`);
 
     // Check if logo exists
     const pengaturan = await db.pengaturan.findFirst();
-    let logoFullPath: string | null = null;
+    let logoBuffer: Buffer | null = null;
     if (pengaturan?.logoPath) {
-      logoFullPath = path.join(process.cwd(), 'uploads', 'logos', pengaturan.logoPath);
+      try {
+        logoBuffer = await downloadFile(pengaturan.logoPath);
+      } catch (error) {
+        console.warn('Failed to load logo:', error);
+        // Continue without logo
+      }
     }
 
-    const qrBuffer = await generateQRCodeWithLogo(verificationUrl, qrOutputPath, logoFullPath);
+    const qrBuffer = await generateQRCodeWithLogo(verificationUrl, logoBuffer);
 
     // Generate composite TTE stamp image (QR + text)
     const qrResized = await sharp(qrBuffer).resize(300, 300).png().toBuffer();
@@ -146,9 +143,11 @@ export async function POST(request: NextRequest) {
       .png()
       .toBuffer();
 
-    // Save TTE stamp image
-    const tteStampPath = path.join(tteStampDir, `${tokenVerifikasi}.png`);
-    fs.writeFileSync(tteStampPath, bordered);
+    // Upload TTE stamp image
+    const tteStampPath = await uploadFile(`tte-stamps/${tokenVerifikasi}.png`, bordered, { contentType: 'image/png' });
+    
+    // Also upload the QR code
+    await uploadFile(`qrcodes/${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
 
     // Create Dokumen record with status 'pending'
     const dokumen = await db.dokumen.create({

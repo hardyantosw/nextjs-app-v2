@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
-import fs from 'fs';
+import { downloadFile, fileExists } from '@/lib/storage';
 
 /**
  * GET /api/pengaturan/logo/[filename]
@@ -15,21 +15,18 @@ export async function GET(
 
     // Prevent directory traversal attacks
     const sanitizedFilename = path.basename(filename);
-    const filePath = path.join(
-      process.cwd(),
-      'uploads',
-      'logos',
-      sanitizedFilename
-    );
-
-    if (!fs.existsSync(filePath)) {
+    
+    // Check if file exists
+    const exists = await fileExists(`logos/${sanitizedFilename}`);
+    if (!exists) {
       return NextResponse.json(
         { error: 'File logo tidak ditemukan' },
         { status: 404 }
       );
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
+    // Download file
+    const fileBuffer = await downloadFile(`logos/${sanitizedFilename}`);
 
     // Determine content type based on file extension
     const ext = path.extname(sanitizedFilename).toLowerCase();

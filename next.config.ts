@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: false,
   serverExternalPackages: ["sharp"],
+  images: {
+    unoptimized: false,
+  },
 };
 
 export default nextConfig;

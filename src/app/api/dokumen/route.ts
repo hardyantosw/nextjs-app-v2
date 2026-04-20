@@ -9,8 +9,7 @@ import {
   signPDF,
   ensureUploadsDir,
 } from '@/lib/tte-utils';
-import fs from 'fs';
-import path from 'path';
+import { uploadFile, downloadFile } from '@/lib/storage';
 
 /**
  * GET /api/dokumen
@@ -186,14 +185,8 @@ export async function POST(request: NextRequest) {
 
     // Step 1: Save original PDF to uploads/original/
     const originalFilename = generateUniqueFilename(file.name);
-    const originalPath = path.join(
-      process.cwd(),
-      'uploads',
-      'original',
-      originalFilename
-    );
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(originalPath, fileBuffer);
+    const originalPath = await uploadFile(`original/${originalFilename}`, fileBuffer, { contentType: 'application/pdf' });
 
     // Step 2: Calculate SHA-256 hash of original file
     const hashFile = calculateBufferHash(fileBuffer);
@@ -203,44 +196,23 @@ export async function POST(request: NextRequest) {
 
     // Step 4: Generate QR code containing verification URL
     const verificationUrl = `/?verify=${tokenVerifikasi}`;
-    const qrOutputPath = path.join(
-      process.cwd(),
-      'uploads',
-      'qrcodes',
-      `${tokenVerifikasi}.png`
-    );
 
     // Step 5: Check if logo exists in pengaturan
     const pengaturan = await db.pengaturan.findFirst();
-    let logoPath: string | null = null;
+    let logoBuffer: Buffer | null = null;
     if (pengaturan?.logoPath) {
-      const candidatePath = path.join(
-        process.cwd(),
-        'uploads',
-        'logos',
-        pengaturan.logoPath
-      );
-      if (fs.existsSync(candidatePath)) {
-        logoPath = candidatePath;
+      try {
+        logoBuffer = await downloadFile(pengaturan.logoPath);
+      } catch (error) {
+        console.warn('Failed to load logo:', error);
+        // Continue without logo
       }
     }
 
     // Generate QR code with optional logo overlay
-    const qrImageBuffer = await generateQRCodeWithLogo(
-      verificationUrl,
-      qrOutputPath,
-      logoPath
-    );
+    const qrImageBuffer = await generateQRCodeWithLogo(verificationUrl, logoBuffer);
 
     // Step 6: Sign the PDF (add QR code + text to bottom-right of last page)
-    const signedFilename = generateUniqueFilename(file.name);
-    const signedPath = path.join(
-      process.cwd(),
-      'uploads',
-      'signed',
-      signedFilename
-    );
-
     const tglTtd = new Date();
     const tanggalStr = tglTtd.toLocaleDateString('id-ID', {
       day: 'numeric',
@@ -248,7 +220,7 @@ export async function POST(request: NextRequest) {
       year: 'numeric',
     });
 
-    await signPDF(originalPath, signedPath, qrImageBuffer, {
+    const signedPdfBuffer = await signPDF(fileBuffer, qrImageBuffer, {
       nama: pegawai.nama,
       nip: pegawai.nip,
       jabatan: pegawai.jabatan,
@@ -256,7 +228,14 @@ export async function POST(request: NextRequest) {
       tanggal: tanggalStr,
     });
 
-    // Step 7: Save document record to database
+    // Step 7: Upload signed PDF
+    const signedFilename = generateUniqueFilename(file.name);
+    const signedPath = await uploadFile(`signed/${signedFilename}`, signedPdfBuffer, { contentType: 'application/pdf' });
+
+    // Step 8: Upload QR code
+    const qrPath = await uploadFile(`qrcodes/${tokenVerifikasi}.png`, qrImageBuffer, { contentType: 'image/png' });
+
+    // Step 9: Save document record to database
     const dokumen = await db.dokumen.create({
       data: {
         namaFile: file.name,
