@@ -62,9 +62,11 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorDetail = process.env.NODE_ENV === 'production' ? 'Server error' : errorMessage;
+    console.error('Login error:', errorMessage, error);
     return NextResponse.json(
-      { success: false, message: 'Terjadi kesalahan pada server' },
+      { success: false, message: 'Terjadi kesalahan pada server', detail: errorDetail },
       { status: 500 }
     );
   }

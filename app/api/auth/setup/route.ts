@@ -36,9 +36,10 @@ export async function POST() {
       },
     });
   } catch (error) {
-    console.error('Setup error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Setup error:', errorMessage, error);
     return NextResponse.json(
-      { success: false, message: 'Terjadi kesalahan pada server' },
+      { success: false, message: 'Terjadi kesalahan pada server', detail: errorMessage },
       { status: 500 }
     );
   }
