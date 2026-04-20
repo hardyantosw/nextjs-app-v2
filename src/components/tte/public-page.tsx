@@ -129,6 +129,22 @@ export default function PublicPage() {
   const [loginShowPassword, setLoginShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [setupStatus, setSetupStatus] = useState<'idle' | 'loading' | 'done'>('idle');
+
+  // Ensure default admin user exists on first load
+  useEffect(() => {
+    const ensureAdminUser = async () => {
+      setSetupStatus('loading');
+      try {
+        await fetch('/api/auth/setup', { method: 'POST' });
+      } catch {
+        // Silently ignore setup errors
+      } finally {
+        setSetupStatus('done');
+      }
+    };
+    ensureAdminUser();
+  }, []);
 
   // Fetch pengaturan
   useEffect(() => {
@@ -818,6 +834,11 @@ export default function PublicPage() {
                 {loginError}
               </div>
             )}
+            {setupStatus === 'loading' && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md px-4 py-3 text-sm">
+                Mempersiapkan akun admin default... Coba lagi sebentar.
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="login-username">Username</Label>
               <Input
@@ -871,6 +892,9 @@ export default function PublicPage() {
                 </>
               )}
             </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Jika belum pernah login, coba: <strong>admin</strong> / <strong>admin123</strong>
+            </p>
           </form>
         </DialogContent>
       </Dialog>
