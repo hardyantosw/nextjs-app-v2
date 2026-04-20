@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build && prisma generate",
+  "buildCommand": "npm run build",
   "devCommand": "next dev -p 3000",
-  "installCommand": "npm install && prisma generate"
+  "installCommand": "npm install"
 }
