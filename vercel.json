@@ -1,8 +1,5 @@
 {
   "buildCommand": "npm run build && prisma generate",
   "devCommand": "next dev -p 3000",
-  "installCommand": "npm install && prisma generate",
-  "env": {
-    "DATABASE_URL": "@database_url"
-  }
+  "installCommand": "npm install && prisma generate"
 }
