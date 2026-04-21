@@ -55,28 +55,28 @@ export async function POST(request: NextRequest) {
     if (!pengaturan) {
       pengaturan = await db.pengaturan.create({
         data: {
-          logoPath: uniqueFilename,
+          logoPath: logoPath,
         },
       });
     } else {
       // Delete old logo file if exists
       if (pengaturan.logoPath) {
-        await deleteFile(`logos/${pengaturan.logoPath}`).catch(() => {
+        await deleteFile(pengaturan.logoPath).catch(() => {
           // Silently ignore if file doesn't exist
         });
       }
 
       pengaturan = await db.pengaturan.update({
         where: { id: pengaturan.id },
-        data: { logoPath: uniqueFilename },
+        data: { logoPath: logoPath },
       });
     }
 
     return NextResponse.json({
       message: 'Logo berhasil diunggah',
       data: {
-        logoPath: uniqueFilename,
-        logoUrl: `/api/pengaturan/logo/${uniqueFilename}`,
+        logoPath: logoPath,
+        logoUrl: logoPath.startsWith('http') ? logoPath : `/api/pengaturan/logo/${uniqueFilename}`,
         pengaturan,
       },
     });

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Upload file to storage (local or cloud)
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    await uploadFile(`logos/${uniqueFilename}`, buffer, { contentType: file.type });
+    const headerLogoPath = await uploadFile(`logos/${uniqueFilename}`, buffer, { contentType: file.type });
 
     // Update pengaturan with new header logo path
     let pengaturan = await db.pengaturan.findFirst();
@@ -53,28 +53,28 @@ export async function POST(request: NextRequest) {
     if (!pengaturan) {
       pengaturan = await db.pengaturan.create({
         data: {
-          headerLogoPath: uniqueFilename,
+          headerLogoPath: headerLogoPath,
         },
       });
     } else {
       // Delete old header logo file if exists
       if (pengaturan.headerLogoPath) {
-        await deleteFile(`logos/${pengaturan.headerLogoPath}`).catch(() => {
+        await deleteFile(pengaturan.headerLogoPath).catch(() => {
           // Silently ignore if file doesn't exist
         });
       }
 
       pengaturan = await db.pengaturan.update({
         where: { id: pengaturan.id },
-        data: { headerLogoPath: uniqueFilename },
+        data: { headerLogoPath: headerLogoPath },
       });
     }
 
     return NextResponse.json({
       message: 'Logo header berhasil diunggah',
       data: {
-        headerLogoPath: uniqueFilename,
-        headerLogoUrl: `/api/pengaturan/header-logo/${uniqueFilename}`,
+        headerLogoPath: headerLogoPath,
+        headerLogoUrl: headerLogoPath.startsWith('http') ? headerLogoPath : `/api/pengaturan/header-logo/${uniqueFilename}`,
         pengaturan,
       },
     });

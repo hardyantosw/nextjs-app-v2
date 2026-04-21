@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import fs from 'fs';
+import { downloadFile, fileExists } from '@/lib/storage';
 
 /**
  * GET /api/dokumen/[id]/preview
@@ -27,14 +27,29 @@ export async function GET(
     // Determine which file to serve
     const filePath = dokumen.pathFileTtd || dokumen.pathFileAsli;
 
-    if (!filePath || !fs.existsSync(filePath)) {
+    if (!filePath) {
       return NextResponse.json(
         { error: 'File dokumen tidak ditemukan di server' },
         { status: 404 }
       );
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
+    // If it's a full URL (Vercel Blob), redirect to it
+    if (filePath.startsWith('http')) {
+      return NextResponse.redirect(filePath);
+    }
+
+    // Check if file exists using storage abstraction
+    const exists = await fileExists(filePath);
+    if (!exists) {
+      return NextResponse.json(
+        { error: 'File dokumen tidak ditemukan di server' },
+        { status: 404 }
+      );
+    }
+
+    // Download file using storage abstraction
+    const fileBuffer = await downloadFile(filePath);
 
     return new NextResponse(fileBuffer, {
       status: 200,

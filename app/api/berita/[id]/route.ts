@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin, checkAuth } from '@/lib/auth';
+import { deleteFile } from '@/lib/storage';
 
 /**
  * GET /api/berita/[id]
@@ -90,6 +91,13 @@ export async function DELETE(
     const existing = await db.berita.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Berita tidak ditemukan' }, { status: 404 });
+    }
+
+    // Delete image file if exists
+    if (existing.imagePath) {
+      await deleteFile(existing.imagePath).catch(() => {
+        // Silently ignore if file doesn't exist
+      });
     }
 
     await db.berita.delete({ where: { id } });

@@ -7,88 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String    @id @default(cuid())
-  username  String    @unique
-  password  String
-  nama      String
-  role      String    @default("admin") // admin or pegawai
-  pegawaiId String?   @unique
-  pegawai   Pegawai?  @relation(fields: [pegawaiId], references: [id])
-  sessions  Session[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-model Pegawai {
-  id          String    @id @default(cuid())
-  nama        String
-  nip         String    @unique
-  jabatan     String
-  opd         String
-  statusAktif Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  dokumen     Dokumen[]
-  user        User?
-}
-
-model Pengaturan {
-  id             String   @id @default(cuid())
-  judul          String   @default("Sistem TTE")
-  subJudul       String   @default("Tanda Tangan Elektronik")
-  logoPath       String?
-  headerLogoPath String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-model Dokumen {
-  id              String    @id @default(cuid())
-  namaFile        String
-  judulDokumen    String?
-  pathFileAsli    String
-  pathFileTtd     String?
-  hashFile        String
-  pegawaiId       String
-  pegawai         Pegawai   @relation(fields: [pegawaiId], references: [id])
-  tglTtd          DateTime?
-  tokenVerifikasi String    @unique
-  status          String    @default("pending") // pending, signed, tte_stamp
-  tanggalExpired  DateTime?
-  aktifSelamanya  Boolean   @default(true)
-  keterangan      String?
-  tembusan        String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model Session {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  userId    String
-  username  String
-  nama      String
-  role      String   @default("pegawai") // admin or pegawai
-  pegawaiId String?
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
 model Banner {
-  id        String   @id @default(cuid())
+  id        String   @id
   judul     String
   deskripsi String?
   imagePath String?
   urutan    Int      @default(0)
   aktif     Boolean  @default(true)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
 }
 
 model Berita {
-  id        String   @id @default(cuid())
+  id        String   @id
   judul     String
   isi       String
   ringkas   String?
@@ -97,5 +28,74 @@ model Berita {
   kategori  String?
   published Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
+}
+
+model Dokumen {
+  id              String    @id
+  namaFile        String
+  judulDokumen    String?
+  pathFileAsli    String
+  pathFileTtd     String?
+  hashFile        String
+  pegawaiId       String
+  tglTtd          DateTime?
+  tokenVerifikasi String    @unique
+  status          String    @default("pending")
+  tanggalExpired  DateTime?
+  aktifSelamanya  Boolean   @default(true)
+  keterangan      String?
+  tembusan        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  Pegawai         Pegawai   @relation(fields: [pegawaiId], references: [id])
+}
+
+model Pegawai {
+  id          String    @id
+  nama        String
+  nip         String    @unique
+  jabatan     String
+  opd         String
+  statusAktif Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  Dokumen     Dokumen[]
+  User        User?
+}
+
+model Pengaturan {
+  id             String   @id
+  judul          String   @default("Sistem TTE")
+  subJudul       String   @default("Tanda Tangan Elektronik")
+  logoPath       String?
+  headerLogoPath String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  userId    String
+  username  String
+  nama      String
+  role      String   @default("pegawai")
+  pegawaiId String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        String    @id
+  username  String    @unique
+  password  String
+  nama      String
+  role      String    @default("admin")
+  pegawaiId String?   @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  Session   Session[]
+  Pegawai   Pegawai?  @relation(fields: [pegawaiId], references: [id])
 }

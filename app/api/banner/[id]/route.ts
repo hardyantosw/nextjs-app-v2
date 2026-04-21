@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth';
-import fs from 'fs';
+import { deleteFile } from '@/lib/storage';
 import path from 'path';
 
 /**
@@ -83,11 +83,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Banner tidak ditemukan' }, { status: 404 });
     }
 
-    // Delete associated image file
+    // Delete associated image file using storage abstraction
     if (existing.imagePath) {
-      const imagePath = path.join(process.cwd(), 'uploads', 'banners', path.basename(existing.imagePath));
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+      try {
+        // If it's a full URL, delete directly, otherwise construct path
+        const filePath = existing.imagePath.startsWith('http')
+          ? existing.imagePath
+          : `banners/${path.basename(existing.imagePath)}`;
+        await deleteFile(filePath);
+      } catch (error) {
+        console.warn('Failed to delete banner image:', error);
+        // Continue with deletion even if file delete fails
       }
     }
 

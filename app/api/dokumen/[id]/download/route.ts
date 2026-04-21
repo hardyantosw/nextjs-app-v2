@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession, getTokenFromRequest } from '@/lib/auth';
-import fs from 'fs';
+import { downloadFile, fileExists } from '@/lib/storage';
 import path from 'path';
 
 /**
@@ -46,14 +46,29 @@ export async function GET(
     // For tte_stamp: serve the TTE stamp image
     let filePath = dokumen.pathFileTtd || dokumen.pathFileAsli;
 
-    if (!filePath || !fs.existsSync(filePath)) {
+    if (!filePath) {
       return NextResponse.json(
         { error: 'File dokumen tidak ditemukan di server' },
         { status: 404 }
       );
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
+    // If it's a full URL (Vercel Blob), redirect to it
+    if (filePath.startsWith('http')) {
+      return NextResponse.redirect(filePath);
+    }
+
+    // Check if file exists using storage abstraction
+    const exists = await fileExists(filePath);
+    if (!exists) {
+      return NextResponse.json(
+        { error: 'File dokumen tidak ditemukan di server' },
+        { status: 404 }
+      );
+    }
+
+    // Download file using storage abstraction
+    const fileBuffer = await downloadFile(filePath);
     const filename = dokumen.judulDokumen
       ? `${dokumen.judulDokumen.replace(/[^a-zA-Z0-9_-]/g, '_')}${path.extname(dokumen.namaFile)}`
       : dokumen.namaFile;

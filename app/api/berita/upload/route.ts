@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const imagePath = await uploadFile(`berita/${filename}`, buffer, { contentType: file.type });
 
-    return NextResponse.json({ imagePath: filename });
+    return NextResponse.json({ imagePath });
   } catch (error) {
     console.error('Error uploading berita image:', error);
     return NextResponse.json({ error: 'Gagal mengunggah gambar' }, { status: 500 });

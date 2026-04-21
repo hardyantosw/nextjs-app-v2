@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { downloadFile, fileExists } from '@/lib/storage';
+import { db } from '@/lib/db';
 
 /**
  * GET /api/banner/image/[filename]
@@ -14,14 +15,38 @@ export async function GET(
     const { filename } = await params;
     const safeName = path.basename(filename);
 
+    // First, try to find the banner in the database to get the actual imagePath
+    const banner = await db.banner.findFirst({
+      where: {
+        imagePath: {
+          contains: safeName
+        }
+      }
+    });
+
+    let filePath: string;
+
+    if (banner?.imagePath) {
+      // Use the stored path from database
+      filePath = banner.imagePath;
+    } else {
+      // Fallback to constructing the path
+      filePath = `banners/${safeName}`;
+    }
+
+    // If it's a full URL (Vercel Blob), redirect to it
+    if (filePath.startsWith('http')) {
+      return NextResponse.redirect(filePath);
+    }
+
     // Check if file exists
-    const exists = await fileExists(`banners/${safeName}`);
+    const exists = await fileExists(filePath);
     if (!exists) {
       return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 404 });
     }
 
     // Download file from storage
-    const buffer = await downloadFile(`banners/${safeName}`);
+    const buffer = await downloadFile(filePath);
     const ext = path.extname(safeName).toLowerCase();
 
     const contentTypeMap: Record<string, string> = {

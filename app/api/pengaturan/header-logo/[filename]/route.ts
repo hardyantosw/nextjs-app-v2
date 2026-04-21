@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { downloadFile, fileExists } from '@/lib/storage';
+import { db } from '@/lib/db';
 
 /**
  * GET /api/pengaturan/header-logo/[filename]
@@ -15,9 +16,32 @@ export async function GET(
 
     // Prevent directory traversal attacks
     const sanitizedFilename = path.basename(filename);
+
+    // First, try to find the pengaturan in the database to get the actual headerLogoPath
+    const pengaturan = await db.pengaturan.findFirst();
+
+    let filePath: string;
+
+    if (pengaturan?.headerLogoPath) {
+      // Check if the stored path matches the requested filename
+      if (pengaturan.headerLogoPath.includes(sanitizedFilename) || pengaturan.headerLogoPath === sanitizedFilename) {
+        filePath = pengaturan.headerLogoPath;
+      } else {
+        // Fallback to constructing the path
+        filePath = `logos/${sanitizedFilename}`;
+      }
+    } else {
+      // Fallback to constructing the path
+      filePath = `logos/${sanitizedFilename}`;
+    }
+
+    // If it's a full URL (Vercel Blob), redirect to it
+    if (filePath.startsWith('http')) {
+      return NextResponse.redirect(filePath);
+    }
     
     // Check if file exists
-    const exists = await fileExists(`logos/${sanitizedFilename}`);
+    const exists = await fileExists(filePath);
     if (!exists) {
       return NextResponse.json(
         { error: 'File logo tidak ditemukan' },
@@ -26,7 +50,7 @@ export async function GET(
     }
 
     // Download file
-    const fileBuffer = await downloadFile(`logos/${sanitizedFilename}`);
+    const fileBuffer = await downloadFile(filePath);
 
     // Determine content type based on file extension
     const ext = path.extname(sanitizedFilename).toLowerCase();

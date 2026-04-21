@@ -39,9 +39,10 @@ export async function POST(request: NextRequest) {
 
     // Upload file to storage (local or cloud)
     const buffer = Buffer.from(await file.arrayBuffer());
-    await uploadFile(`banners/${filename}`, buffer, { contentType: file.type });
+    const uploadedPath = await uploadFile(`banners/${filename}`, buffer, { contentType: file.type });
 
-    return NextResponse.json({ imagePath: filename });
+    // Return the path/URL - in production this will be a full URL, in dev it's relative
+    return NextResponse.json({ imagePath: uploadedPath });
   } catch (error) {
     console.error('Error uploading banner image:', error);
     return NextResponse.json({ error: 'Gagal mengunggah gambar' }, { status: 500 });
