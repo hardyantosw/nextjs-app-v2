@@ -34,6 +34,20 @@ export async function GET(request: NextRequest) {
 
     // Pegawai can only see their own data
     if (session.role === 'pegawai') {
+      // If pegawaiId is not set, return empty result
+      if (!session.pegawaiId) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 0,
+            totalPages: 0,
+          },
+          message: 'Akun Anda belum terhubung ke data pegawai. Silakan hubungi administrator.',
+        });
+      }
       where.id = session.pegawaiId;
     } else {
       // Admin can search/filter
