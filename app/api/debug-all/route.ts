@@ -134,18 +134,32 @@ export async function GET() {
     results['berita'] = { status: 'error', message: 'Berita check failed', details: String(error) };
   }
 
-  // 10. Check Users
+  // 10. Check Users with pegawaiId
   try {
     const users = await db.user.findMany({
-      select: { id: true, username: true, nama: true, role: true }
+      select: { id: true, username: true, nama: true, role: true, pegawaiId: true }
     });
-    results['users'] = { 
-      status: 'ok', 
+    results['users'] = {
+      status: 'ok',
       message: `Found ${users.length} users`,
       details: users
     };
   } catch (error) {
     results['users'] = { status: 'error', message: 'User check failed', details: String(error) };
+  }
+
+  // 11. Check Pegawai details
+  try {
+    const pegawai = await db.pegawai.findMany({
+      select: { id: true, nama: true, nip: true, jabatan: true, opd: true, statusAktif: true }
+    });
+    results['pegawai'] = {
+      status: 'ok',
+      message: `Found ${pegawai.length} pegawai`,
+      details: pegawai
+    };
+  } catch (error) {
+    results['pegawai'] = { status: 'error', message: 'Pegawai check failed', details: String(error) };
   }
 
   // Determine overall status
