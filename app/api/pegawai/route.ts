@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession, getTokenFromRequest } from '@/lib/auth';
+import { randomUUID } from 'crypto';
 
 // GET /api/pegawai - List all pegawai with search, pagination, and status filter
 // - Admin: can see all pegawai
@@ -166,11 +167,13 @@ export async function POST(request: NextRequest) {
     // Create pegawai
     const pegawai = await db.pegawai.create({
       data: {
+        id: randomUUID(),
         nama,
         nip,
         jabatan,
         opd,
         statusAktif: statusAktif !== undefined ? statusAktif : true,
+        updatedAt: new Date(),
       },
     });
 

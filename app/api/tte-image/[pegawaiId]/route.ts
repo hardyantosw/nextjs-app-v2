@@ -4,6 +4,7 @@ import { getSession, getTokenFromRequest } from '@/lib/auth';
 import { generateQRCodeWithLogo, generateVerificationToken, ensureUploadsDir } from '@/lib/tte-utils';
 import { uploadFile, downloadFile, fileExists } from '@/lib/storage';
 import sharp from 'sharp';
+import { randomUUID } from 'crypto';
 
 function escapeXml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -212,6 +213,7 @@ export async function GET(
     if (!existingStamp) {
       await db.dokumen.create({
         data: {
+          id: randomUUID(),
           namaFile: `TTE_${pegawai.nama.replace(/\s+/g, '_')}.png`,
           pathFileAsli: '',
           pathFileTtd: tteImagePath,
@@ -220,6 +222,7 @@ export async function GET(
           tglTtd: new Date(),
           tokenVerifikasi,
           status: 'tte_stamp',
+          updatedAt: new Date(),
         },
       });
     } else {

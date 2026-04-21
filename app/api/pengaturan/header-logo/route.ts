@@ -3,6 +3,7 @@ import path from 'path';
 import { db } from '@/lib/db';
 import { generateUniqueFilename } from '@/lib/tte-utils';
 import { uploadFile, deleteFile } from '@/lib/storage';
+import { randomUUID } from 'crypto';
 
 /**
  * POST /api/pengaturan/header-logo
@@ -53,7 +54,9 @@ export async function POST(request: NextRequest) {
     if (!pengaturan) {
       pengaturan = await db.pengaturan.create({
         data: {
+          id: randomUUID(),
           headerLogoPath: headerLogoPath,
+          updatedAt: new Date(),
         },
       });
     } else {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
+import { randomUUID } from 'crypto';
 
 export async function POST() {
   try {
@@ -32,10 +33,12 @@ export async function POST() {
 
     const admin = await db.user.create({
       data: {
+        id: randomUUID(),
         username: 'admin',
         password: hashedPassword,
         nama: 'Administrator',
         role: 'admin',
+        updatedAt: new Date(),
       },
     });
 

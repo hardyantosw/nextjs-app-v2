@@ -8,6 +8,7 @@ import {
 } from '@/lib/tte-utils';
 import { uploadFile, downloadFile } from '@/lib/storage';
 import sharp from 'sharp';
+import { randomUUID } from 'crypto';
 
 function escapeXml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -152,6 +153,7 @@ export async function POST(request: NextRequest) {
     // Create Dokumen record with status 'tte_stamp' for TTE stamp images
     const dokumen = await db.dokumen.create({
       data: {
+        id: randomUUID(),
         namaFile: `TTE_${pegawai.nama.replace(/\s+/g, '_')}.png`,
         judulDokumen: null,
         pathFileAsli: '',
@@ -162,6 +164,7 @@ export async function POST(request: NextRequest) {
         tokenVerifikasi,
         status: 'tte_stamp',
         aktifSelamanya: true,
+        updatedAt: new Date(),
       },
       include: {
         Pegawai: true,

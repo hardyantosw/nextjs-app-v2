@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth';
+import { randomUUID } from 'crypto';
 
 /**
  * GET /api/banner
@@ -53,11 +54,13 @@ export async function POST(request: NextRequest) {
 
     const banner = await db.banner.create({
       data: {
+        id: randomUUID(),
         judul: judul.trim(),
         deskripsi: deskripsi?.trim() || null,
         imagePath: imagePath || null,
         urutan: typeof urutan === 'number' ? urutan : 0,
         aktif: typeof aktif === 'boolean' ? aktif : true,
+        updatedAt: new Date(),
       },
     });
 

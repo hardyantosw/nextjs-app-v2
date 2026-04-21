@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth';
+import { randomUUID } from 'crypto';
 
 /**
  * GET /api/berita
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
 
     const berita = await db.berita.create({
       data: {
+        id: randomUUID(),
         judul: judul.trim(),
         isi: isi.trim(),
         ringkas: ringkas?.trim() || null,
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
         penulis: penulis?.trim() || null,
         kategori: kategori?.trim() || null,
         published: typeof published === 'boolean' ? published : false,
+        updatedAt: new Date(),
       },
     });
 

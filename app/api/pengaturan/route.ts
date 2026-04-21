@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { randomUUID } from 'crypto';
 
 /**
  * GET /api/pengaturan
@@ -11,7 +12,10 @@ export async function GET() {
 
     if (!pengaturan) {
       pengaturan = await db.pengaturan.create({
-        data: {},
+        data: {
+          id: randomUUID(),
+          updatedAt: new Date(),
+        },
       });
     }
 
@@ -35,7 +39,10 @@ export async function PUT(request: NextRequest) {
 
     if (!pengaturan) {
       pengaturan = await db.pengaturan.create({
-        data: {},
+        data: {
+          id: randomUUID(),
+          updatedAt: new Date(),
+        },
       });
     }
 

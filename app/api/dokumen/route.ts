@@ -10,6 +10,7 @@ import {
   ensureUploadsDir,
 } from '@/lib/tte-utils';
 import { uploadFile, downloadFile } from '@/lib/storage';
+import { randomUUID } from 'crypto';
 
 /**
  * GET /api/dokumen
@@ -238,6 +239,7 @@ export async function POST(request: NextRequest) {
     // Step 9: Save document record to database
     const dokumen = await db.dokumen.create({
       data: {
+        id: randomUUID(),
         namaFile: file.name,
         pathFileAsli: originalPath,
         pathFileTtd: signedPath,
@@ -246,6 +248,7 @@ export async function POST(request: NextRequest) {
         tglTtd,
         tokenVerifikasi,
         status: 'signed',
+        updatedAt: new Date(),
       },
       include: {
         Pegawai: true,

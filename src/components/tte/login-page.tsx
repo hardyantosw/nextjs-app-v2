@@ -64,6 +64,8 @@ export default function LoginPage() {
             id: data.data.id,
             username: data.data.username,
             nama: data.data.nama,
+            role: data.data.role,
+            pegawaiId: data.data.pegawaiId,
           });
         } else {
           setError(data.message || 'Login gagal. Periksa username dan password Anda.');

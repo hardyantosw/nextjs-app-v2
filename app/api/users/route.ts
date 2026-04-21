@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin, hashPassword } from '@/lib/auth';
+import { randomUUID } from 'crypto';
 
 // GET /api/users - List all users with pegawai info (admin only)
 export async function GET(request: NextRequest) {
@@ -163,11 +164,13 @@ export async function POST(request: NextRequest) {
 
     const user = await db.user.create({
       data: {
+        id: randomUUID(),
         username,
         password: hashedPassword,
         nama,
         role,
         pegawaiId: role === 'pegawai' ? pegawaiId : null,
+        updatedAt: new Date(),
       },
       include: {
         Pegawai: {
