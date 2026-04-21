@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession, getTokenFromRequest } from '@/lib/auth';
-import { downloadFile, fileExists } from '@/lib/storage';
+import { downloadFile, fileExists, uploadFile } from '@/lib/storage';
+import { generateQRCodeWithLogo } from '@/lib/tte-utils';
 
 /**
  * GET /api/dokumen/[id]/qrcode
  * Serve the QR code image for a signed document or TTE stamp
+ * If QR code doesn't exist, regenerate it
  * Query params:
  *   - download=true: Sets Content-Disposition to attachment (download) instead of inline
  */
@@ -28,6 +30,7 @@ export async function GET(
 
     const dokumen = await db.dokumen.findUnique({
       where: { id },
+      include: { pegawai: true },
     });
 
     if (!dokumen) {
@@ -47,41 +50,61 @@ export async function GET(
 
     let qrBuffer: Buffer | null = null;
 
-    if (isProduction && dokumen.pathFileTtd && dokumen.pathFileTtd.startsWith('http')) {
-      // In production, construct QR code URL from the TTE stamp URL
-      // pathFileTtd is like: https://xxx.public.blob.vercel-storage.com/tte-stamps/abc.png
-      // QR code is at: https://xxx.public.blob.vercel-storage.com/qrcodes/abc.png
-      const urlObj = new URL(dokumen.pathFileTtd);
-      const qrUrl = `${urlObj.origin}/qrcodes/${dokumen.tokenVerifikasi}.png`;
-      
-      try {
-        qrBuffer = await downloadFile(qrUrl);
-      } catch (error) {
-        console.warn('QR code not found at:', qrUrl, error);
-        // QR code doesn't exist, return error
-        return NextResponse.json(
-          { error: 'QR Code tidak ditemukan di server' },
-          { status: 404 }
-        );
-      }
-    } else {
+    // In production, we need to regenerate QR code since we don't store the QR URL separately
+    // The TTE stamp URL is stored, but QR code URL is different in Vercel Blob
+    // For local development, try to find the existing QR code file
+    if (!isProduction) {
       // Local development - use relative path
       const qrPath = `qrcodes/${dokumen.tokenVerifikasi}.png`;
       
       if (await fileExists(qrPath)) {
-        qrBuffer = await downloadFile(qrPath);
-      } else {
-        return NextResponse.json(
-          { error: 'QR Code tidak ditemukan di server' },
-          { status: 404 }
-        );
+        try {
+          qrBuffer = await downloadFile(qrPath);
+        } catch (error) {
+          console.warn('Failed to read existing QR code:', error);
+        }
+      }
+    }
+
+    // If QR code doesn't exist (or in production), regenerate it
+    if (!qrBuffer) {
+      console.log('Regenerating QR code for document:', dokumen.id);
+      
+      // Generate verification URL - use the production URL if available
+      const host = request.headers.get('host') || 'localhost:3000';
+      const protocol = request.headers.get('x-forwarded-proto') || 'https';
+      const baseUrl = isProduction ? `${protocol}://${host}` : 'http://localhost:3000';
+      const verificationUrl = `${baseUrl}/?verify=${dokumen.tokenVerifikasi}`;
+      
+      // Try to get logo from pengaturan
+      const pengaturan = await db.pengaturan.findFirst();
+      let logoBuffer: Buffer | null = null;
+      if (pengaturan?.logoPath) {
+        try {
+          logoBuffer = await downloadFile(pengaturan.logoPath);
+        } catch (error) {
+          console.warn('Failed to load logo for QR code:', error);
+        }
+      }
+      
+      // Generate QR code
+      qrBuffer = await generateQRCodeWithLogo(verificationUrl, logoBuffer);
+      
+      // Upload QR code for future use (in production)
+      if (isProduction) {
+        try {
+          await uploadFile(`qrcodes/${dokumen.tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
+          console.log('QR code uploaded successfully');
+        } catch (uploadError) {
+          console.warn('Failed to upload QR code, but continuing with response:', uploadError);
+        }
       }
     }
 
     if (!qrBuffer) {
       return NextResponse.json(
-        { error: 'QR Code tidak ditemukan di server' },
-        { status: 404 }
+        { error: 'Gagal membuat QR Code' },
+        { status: 500 }
       );
     }
 
@@ -91,12 +114,13 @@ export async function GET(
 
     const headers: Record<string, string> = {
       'Content-Type': 'image/png',
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Cache-Control': 'no-cache',
       'Content-Length': qrBuffer.length.toString(),
     };
 
     if (isDownload) {
-      headers['Content-Disposition'] = `attachment; filename="QRCode_${dokumen.tokenVerifikasi}.png"`;
+      const pegawaiName = dokumen.pegawai?.nama?.replace(/\s+/g, '_') || 'Unknown';
+      headers['Content-Disposition'] = `attachment; filename="QRCode_${pegawaiName}.png"`;
     } else {
       headers['Content-Disposition'] = 'inline';
     }
