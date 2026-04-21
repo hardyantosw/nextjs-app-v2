@@ -9,7 +9,8 @@ import * as fs from 'fs/promises'
 import * as fsSync from 'fs'
 import path from 'path'
 
-const USE_VERCEL_BLOB = process.env.VERCEL === '1'
+// Check if we're in Vercel production or if BLOB_READ_WRITE_TOKEN is available
+const USE_VERCEL_BLOB = process.env.VERCEL === '1' || !!process.env.BLOB_READ_WRITE_TOKEN
 
 /**
  * Initialize Vercel Blob client (lazy-loaded to avoid import errors in development)
@@ -24,13 +25,16 @@ async function getBlobClient() {
       // Check for BLOB_READ_WRITE_TOKEN
       if (!process.env.BLOB_READ_WRITE_TOKEN) {
         console.error('BLOB_READ_WRITE_TOKEN not configured')
+        console.error('VERCEL env:', process.env.VERCEL)
+        console.error('NODE_ENV:', process.env.NODE_ENV)
         throw new Error(
-          'BLOB_READ_WRITE_TOKEN not configured. Please add it in Vercel Environment Variables.'
+          'BLOB_READ_WRITE_TOKEN not configured. Please add it in Vercel Environment Variables. Go to Vercel Dashboard > Storage > Blob > Connect to Project.'
         )
       }
       
       const { put, del } = await import('@vercel/blob')
       blobClient = { put, del }
+      console.log('Vercel Blob client initialized successfully')
       return blobClient
     } catch (error) {
       console.error('Failed to initialize Vercel Blob:', error)
