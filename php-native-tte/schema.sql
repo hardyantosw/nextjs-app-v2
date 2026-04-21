@@ -1,0 +1,23 @@
+CREATE DATABASE IF NOT EXISTS mtrd6449_tte CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE mtrd6449_tte;
+
+CREATE TABLE users (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  display_name VARCHAR(150) NOT NULL,
+  role ENUM('admin','user') NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE documents (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  original_file VARCHAR(255) NOT NULL,
+  signed_file VARCHAR(255) NULL,
+  token VARCHAR(50) NOT NULL UNIQUE,
+  status ENUM('pending','signed') NOT NULL DEFAULT 'pending',
+  verified_at DATETIME NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;

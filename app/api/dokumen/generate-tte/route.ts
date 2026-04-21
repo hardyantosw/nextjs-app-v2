@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     // Also upload the QR code
     await uploadFile(`qrcodes/${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
 
-    // Create Dokumen record with status 'pending'
+    // Create Dokumen record with status 'tte_stamp' for TTE stamp images
     const dokumen = await db.dokumen.create({
       data: {
         namaFile: `TTE_${pegawai.nama.replace(/\s+/g, '_')}.png`,
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
         pegawaiId,
         tglTtd: new Date(),
         tokenVerifikasi,
-        status: 'pending',
+        status: 'tte_stamp',
         aktifSelamanya: true,
       },
       include: {

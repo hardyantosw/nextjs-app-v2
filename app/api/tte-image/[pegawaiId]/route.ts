@@ -85,20 +85,42 @@ export async function GET(
       if (isQrCodeOnly) {
         // Serve the QR code with logo
         try {
-          // In production, check if the URL exists
-          if (existingStamp.pathFileTtd) {
-            // Generate QR code URL from the stored path
-            const qrUrl = existingStamp.pathFileTtd.replace(/\.png$/, '_qr.png');
-            const qrFileExists = await fileExists(qrUrl);
-            if (qrFileExists) {
-              const qrBuffer = await downloadFile(qrUrl);
-              return new NextResponse(new Uint8Array(qrBuffer), {
-                headers: {
-                  'Content-Type': 'image/png',
-                  'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
-                  'Cache-Control': 'no-cache',
-                },
-              });
+          // QR code is stored at qrcodes/${tokenVerifikasi}.png
+          // Construct the URL from the tokenVerifikasi
+          if (existingStamp.tokenVerifikasi) {
+            // In production (Vercel Blob), construct the URL from the blob store base URL
+            if (process.env.VERCEL === '1' || process.env.BLOB_READ_WRITE_TOKEN) {
+              // Extract base URL from the TTE stamp path
+              if (existingStamp.pathFileTtd && existingStamp.pathFileTtd.startsWith('http')) {
+                const baseUrl = existingStamp.pathFileTtd.substring(0, existingStamp.pathFileTtd.lastIndexOf('/'));
+                const parentDir = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+                const qrUrl = `${parentDir}/qrcodes/${existingStamp.tokenVerifikasi}.png`;
+                const qrFileExists = await fileExists(qrUrl);
+                if (qrFileExists) {
+                  const qrBuffer = await downloadFile(qrUrl);
+                  return new NextResponse(new Uint8Array(qrBuffer), {
+                    headers: {
+                      'Content-Type': 'image/png',
+                      'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
+                      'Cache-Control': 'no-cache',
+                    },
+                  });
+                }
+              }
+            } else {
+              // Local development - use relative path
+              const qrPath = `qrcodes/${existingStamp.tokenVerifikasi}.png`;
+              const qrFileExists = await fileExists(qrPath);
+              if (qrFileExists) {
+                const qrBuffer = await downloadFile(qrPath);
+                return new NextResponse(new Uint8Array(qrBuffer), {
+                  headers: {
+                    'Content-Type': 'image/png',
+                    'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
+                    'Cache-Control': 'no-cache',
+                  },
+                });
+              }
             }
           }
         } catch (error) {

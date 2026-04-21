@@ -1,0 +1,15 @@
+# Disable directory listing for the application
+Options -Indexes
+
+# Use index.php as the default document
+DirectoryIndex index.php
+
+# Prevent direct access to hidden files and sensitive project files
+<FilesMatch "^(\.htaccess|\.env|config\.php|db\.php|functions\.php|setup\.php|schema\.sql|README\.md)$">
+    Require all denied
+</FilesMatch>
+
+# Block direct access to backup, source and script files
+<FilesMatch "\.(sql|sh|bat|ps1|phps)$">
+    Require all denied
+</FilesMatch>
