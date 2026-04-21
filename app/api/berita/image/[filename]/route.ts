@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
 import path from 'path';
+import { downloadFile, fileExists } from '@/lib/storage';
 
 /**
  * GET /api/berita/image/[filename]
@@ -13,13 +13,15 @@ export async function GET(
   try {
     const { filename } = await params;
     const safeName = path.basename(filename);
-    const filePath = path.join(process.cwd(), 'uploads', 'berita', safeName);
 
-    if (!fs.existsSync(filePath)) {
+    // Check if file exists
+    const exists = await fileExists(`berita/${safeName}`);
+    if (!exists) {
       return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 404 });
     }
 
-    const buffer = fs.readFileSync(filePath);
+    // Download file from storage
+    const buffer = await downloadFile(`berita/${safeName}`);
     const ext = path.extname(safeName).toLowerCase();
 
     const contentTypeMap: Record<string, string> = {
@@ -31,7 +33,7 @@ export async function GET(
 
     const contentType = contentTypeMap[ext] || 'application/octet-stream';
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=86400',

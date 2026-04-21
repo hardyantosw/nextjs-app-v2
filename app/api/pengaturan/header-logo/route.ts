@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
-import fs from 'fs';
 import { db } from '@/lib/db';
-import { generateUniqueFilename, ensureUploadsDir } from '@/lib/tte-utils';
+import { generateUniqueFilename } from '@/lib/tte-utils';
+import { uploadFile, deleteFile } from '@/lib/storage';
 
 /**
  * POST /api/pengaturan/header-logo
@@ -39,23 +39,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure uploads directory exists
-    ensureUploadsDir();
-
-    // Use 'logos' directory for header logos too
-    const uploadDir = path.join(process.cwd(), 'uploads', 'logos');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
     // Generate unique filename
     const uniqueFilename = generateUniqueFilename(file.name);
-    const filePath = path.join(uploadDir, uniqueFilename);
 
-    // Save file to disk
+    // Upload file to storage (local or cloud)
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(filePath, buffer);
+    await uploadFile(`logos/${uniqueFilename}`, buffer, { contentType: file.type });
 
     // Update pengaturan with new header logo path
     let pengaturan = await db.pengaturan.findFirst();
@@ -69,14 +59,9 @@ export async function POST(request: NextRequest) {
     } else {
       // Delete old header logo file if exists
       if (pengaturan.headerLogoPath) {
-        const oldFilePath = path.join(uploadDir, pengaturan.headerLogoPath);
-        if (fs.existsSync(oldFilePath)) {
-          try {
-            fs.unlinkSync(oldFilePath);
-          } catch (err) {
-            console.error('Error deleting old header logo:', err);
-          }
-        }
+        await deleteFile(`logos/${pengaturan.headerLogoPath}`).catch(() => {
+          // Silently ignore if file doesn't exist
+        });
       }
 
       pengaturan = await db.pengaturan.update({

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
-import fs from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { uploadFile } from '@/lib/storage';
 
 /**
  * POST /api/banner/upload
@@ -33,20 +33,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Ukuran file maksimal 5MB' }, { status: 400 });
     }
 
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), 'uploads', 'banners');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
     // Generate unique filename
     const ext = path.extname(file.name).toLowerCase() || '.png';
     const filename = `${randomUUID()}${ext}`;
-    const filePath = path.join(uploadDir, filename);
 
-    // Save file
+    // Upload file to storage (local or cloud)
     const buffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(filePath, buffer);
+    await uploadFile(`banners/${filename}`, buffer, { contentType: file.type });
 
     return NextResponse.json({ imagePath: filename });
   } catch (error) {
