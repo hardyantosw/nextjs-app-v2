@@ -51,7 +51,7 @@ export async function GET(
     // Download file using storage abstraction
     const fileBuffer = await downloadFile(filePath);
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
