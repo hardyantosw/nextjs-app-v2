@@ -86,15 +86,16 @@ export async function GET(
         // Serve the QR code with logo
         try {
           // QR code is stored at qrcodes/${tokenVerifikasi}.png
-          // Construct the URL from the tokenVerifikasi
           if (existingStamp.tokenVerifikasi) {
             // In production (Vercel Blob), construct the URL from the blob store base URL
             if (process.env.VERCEL === '1' || process.env.BLOB_READ_WRITE_TOKEN) {
               // Extract base URL from the TTE stamp path
               if (existingStamp.pathFileTtd && existingStamp.pathFileTtd.startsWith('http')) {
-                const baseUrl = existingStamp.pathFileTtd.substring(0, existingStamp.pathFileTtd.lastIndexOf('/'));
-                const parentDir = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
-                const qrUrl = `${parentDir}/qrcodes/${existingStamp.tokenVerifikasi}.png`;
+                // pathFileTtd is like: https://xxx.public.blob.vercel-storage.com/tte-stamps/abc.png
+                // We need: https://xxx.public.blob.vercel-storage.com/qrcodes/abc.png
+                const urlObj = new URL(existingStamp.pathFileTtd);
+                const qrUrl = `${urlObj.origin}/qrcodes/${existingStamp.tokenVerifikasi}.png`;
+                console.log('Attempting to fetch QR from:', qrUrl);
                 const qrFileExists = await fileExists(qrUrl);
                 if (qrFileExists) {
                   const qrBuffer = await downloadFile(qrUrl);
@@ -172,8 +173,8 @@ export async function GET(
     const isQrCodeOnly = url.searchParams.get('qrcode') === 'true';
 
     if (isQrCodeOnly) {
-      // Upload and serve the QR code with logo only
-      await uploadFile(`qrcodes/tte_${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
+      // Upload and serve the QR code with logo only - use consistent path with generate-tte
+      await uploadFile(`qrcodes/${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
       return new NextResponse(new Uint8Array(qrBuffer), {
         headers: {
           'Content-Type': 'image/png',
@@ -226,9 +227,9 @@ export async function GET(
       .png()
       .toBuffer();
 
-    // Upload images
-    const tteImagePath = await uploadFile(`tte-images/${tokenVerifikasi}.png`, bordered, { contentType: 'image/png' });
-    await uploadFile(`qrcodes/tte_${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
+    // Upload images - use consistent paths with generate-tte
+    const tteImagePath = await uploadFile(`tte-stamps/${tokenVerifikasi}.png`, bordered, { contentType: 'image/png' });
+    await uploadFile(`qrcodes/${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
 
     // 6. Save to database (if not exists)
     if (!existingStamp) {
