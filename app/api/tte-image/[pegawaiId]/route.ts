@@ -83,56 +83,28 @@ export async function GET(
       const isQrCodeOnly = url.searchParams.get('qrcode') === 'true';
 
       if (isQrCodeOnly) {
-        // Serve the QR code with logo
-        try {
-          // QR code is stored at qrcodes/${tokenVerifikasi}.png
-          if (existingStamp.tokenVerifikasi) {
-            // In production (Vercel Blob), construct the URL from the blob store base URL
-            if (process.env.VERCEL === '1' || process.env.BLOB_READ_WRITE_TOKEN) {
-              // Extract base URL from the TTE stamp path
-              if (existingStamp.pathFileTtd && existingStamp.pathFileTtd.startsWith('http')) {
-                // pathFileTtd is like: https://xxx.public.blob.vercel-storage.com/tte-stamps/abc.png
-                // We need: https://xxx.public.blob.vercel-storage.com/qrcodes/abc.png
-                const urlObj = new URL(existingStamp.pathFileTtd);
-                const qrUrl = `${urlObj.origin}/qrcodes/${existingStamp.tokenVerifikasi}.png`;
-                console.log('Attempting to fetch QR from:', qrUrl);
-                
-                try {
-                  const qrBuffer = await downloadFile(qrUrl);
-                  return new NextResponse(new Uint8Array(qrBuffer), {
-                    headers: {
-                      'Content-Type': 'image/png',
-                      'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
-                      'Cache-Control': 'no-cache',
-                    },
-                  });
-                } catch (downloadError) {
-                  console.warn('QR code not found, will regenerate:', downloadError);
-                  // Continue below to regenerate QR code
-                }
-              }
-            } else {
-              // Local development - use relative path
-              const qrPath = `qrcodes/${existingStamp.tokenVerifikasi}.png`;
-              try {
-                const qrBuffer = await downloadFile(qrPath);
-                return new NextResponse(new Uint8Array(qrBuffer), {
-                  headers: {
-                    'Content-Type': 'image/png',
-                    'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
-                    'Cache-Control': 'no-cache',
-                  },
-                });
-              } catch (downloadError) {
-                console.warn('QR code not found locally, will regenerate:', downloadError);
-                // Continue below to regenerate QR code
-              }
-            }
+        // Serve the QR code with logo - always regenerate in production since we don't store QR URL
+        // In local development, try to find existing file first
+        const isProduction = process.env.VERCEL === '1' || process.env.BLOB_READ_WRITE_TOKEN;
+        
+        if (!isProduction && existingStamp.tokenVerifikasi) {
+          // Local development - try to find existing QR code
+          const qrPath = `qrcodes/${existingStamp.tokenVerifikasi}.png`;
+          try {
+            const qrBuffer = await downloadFile(qrPath);
+            return new NextResponse(new Uint8Array(qrBuffer), {
+              headers: {
+                'Content-Type': 'image/png',
+                'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
+                'Cache-Control': 'no-cache',
+              },
+            });
+          } catch (downloadError) {
+            console.warn('QR code not found locally, will regenerate:', downloadError);
+            // Continue below to regenerate QR code
           }
-        } catch (error) {
-          console.warn('Failed to load QR code:', error);
-          // Continue below to regenerate QR code
         }
+        // In production, always regenerate QR code since we can't construct the URL
       } else {
         // Default: serve the composite TTE stamp
         try {

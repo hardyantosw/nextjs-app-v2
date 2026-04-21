@@ -71,10 +71,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Dokumen tidak ditemukan' }, { status: 404 });
     }
 
-    // Only pending documents can be updated
-    if (existingDoc.status !== 'pending') {
+    // Only pending or tte_stamp documents can be updated
+    if (existingDoc.status !== 'pending' && existingDoc.status !== 'tte_stamp') {
       return NextResponse.json(
-        { error: 'Hanya dokumen berstatus pending yang dapat diperbarui' },
+        { error: 'Hanya dokumen berstatus pending atau tte_stamp yang dapat diperbarui' },
         { status: 400 }
       );
     }
@@ -179,14 +179,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Tidak memiliki akses' }, { status: 403 });
     }
 
-    // Clean up files
+    // Clean up files using storage abstraction
     try {
-      if (dokumen.pathFileAsli && fs.existsSync(dokumen.pathFileAsli)) {
-        fs.unlinkSync(dokumen.pathFileAsli);
-      }
-      if (dokumen.pathFileTtd && fs.existsSync(dokumen.pathFileTtd)) {
-        fs.unlinkSync(dokumen.pathFileTtd);
-      }
       if (dokumen.pathFileAsli) {
         await deleteFile(dokumen.pathFileAsli).catch(() => {
           // Silently ignore if file doesn't exist
@@ -201,8 +195,8 @@ export async function DELETE(
       await deleteFile(`qrcodes/${dokumen.tokenVerifikasi}.png`).catch(() => {
         // Silently ignore if file doesn't exist
       });
-      // Clean up TTE stamp/image
-      await deleteFile(`tte-images/${dokumen.tokenVerifikasi}.png`).catch(() => {
+      // Clean up TTE stamp
+      await deleteFile(`tte-stamps/${dokumen.tokenVerifikasi}.png`).catch(() => {
         // Silently ignore if file doesn't exist
       });
     } catch (error) {

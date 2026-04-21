@@ -16,6 +16,7 @@ import {
   Calendar,
   AlertCircle,
   Info,
+  Edit,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -390,6 +391,28 @@ export default function DokumenPage() {
     }
   }
 
+  // Handle Edit TTE Stamp document - open dialog with existing data
+  async function handleEditTTEDoc(doc: Dokumen) {
+    try {
+      // Set form data from existing document
+      setFormGeneratedId(doc.id);
+      setFormPegawaiId(doc.pegawaiId);
+      setFormTteGenerated(true);
+      setFormJudulDokumen(doc.judulDokumen || '');
+      setFormAktifSelamanya(doc.aktifSelamanya);
+      setFormTanggalExpired(doc.tanggalExpired ? doc.tanggalExpired.split('T')[0] : '');
+      setFormKeterangan(doc.keterangan || '');
+      setFormTembusan(doc.tembusan || '');
+      setFormSignedFile(null);
+      
+      // Open the add dialog in edit mode
+      setAddDialogOpen(true);
+    } catch (error) {
+      console.error('Error opening edit dialog:', error);
+      toast.error('Gagal membuka data dokumen');
+    }
+  }
+
   // Format date
   function formatDate(dateStr: string | null): string {
     if (!dateStr) return '-';
@@ -669,6 +692,18 @@ export default function DokumenPage() {
                                 title="Unduh QR Code"
                               >
                                 <QrCode className="size-4" />
+                              </Button>
+                            )}
+                            {/* Edit button for tte_stamp documents to upload signed document */}
+                            {doc.status === 'tte_stamp' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 text-blue-600 hover:text-blue-700"
+                                onClick={() => handleEditTTEDoc(doc)}
+                                title="Upload Dokumen TTE"
+                              >
+                                <Edit className="size-4" />
                               </Button>
                             )}
                             <Button
