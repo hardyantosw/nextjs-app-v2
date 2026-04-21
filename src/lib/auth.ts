@@ -51,17 +51,22 @@ export async function createSession(user: { id: string; username: string; nama: 
   const now = new Date();
   const expiresAt = new Date(now.getTime() + SESSION_EXPIRY_MS);
 
-  await db.session.create({
-    data: {
-      token,
-      userId: user.id,
-      username: user.username,
-      nama: user.nama,
-      role: user.role,
-      pegawaiId: user.pegawaiId,
-      expiresAt,
-    },
-  });
+  try {
+    await db.session.create({
+      data: {
+        token,
+        userId: user.id,
+        username: user.username,
+        nama: user.nama,
+        role: user.role,
+        pegawaiId: user.pegawaiId,
+        expiresAt,
+      },
+    });
+  } catch (dbError) {
+    console.error('Failed to create session in database:', dbError);
+    throw dbError;
+  }
 
   // Clean up expired sessions
   await cleanupExpiredSessions();
