@@ -416,49 +416,49 @@ export default function PublicPage() {
 
   const kategoriColor: Record<string, string> = {
     Pengumuman: 'bg-amber-100 text-amber-800 border-amber-200',
-    Berita: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    Berita: 'bg-blue-100 text-blue-800 border-blue-200',
     Informasi: 'bg-sky-100 text-sky-800 border-sky-200',
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Header / Navbar */}
-      <header className="bg-emerald-800 text-white shadow-lg sticky top-0 z-50">
+      <header className="backdrop-blur-md bg-white/95 border-b border-blue-100 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 sm:h-18">
             <div className="flex items-center gap-3">
               {pengaturan?.headerLogoPath ? (
                 <img
                   src={pengaturan.headerLogoPath.startsWith('http') ? pengaturan.headerLogoPath : `/api/pengaturan/header-logo/${pengaturan.headerLogoPath}`}
                   alt="Logo"
-                  className="w-9 h-9 rounded-lg object-contain bg-white/15 p-1"
+                  className="w-9 h-9 rounded-xl object-contain bg-blue-50 p-1 border border-blue-100"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                  <ShieldCheck className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-200">
+                  <ShieldCheck className="w-5 h-5 text-blue-600" />
                 </div>
               )}
               <div>
-                <h1 className="text-lg font-bold tracking-tight">{pengaturan?.judul || 'Sistem TTE'}</h1>
-                <p className="text-[10px] text-emerald-200 -mt-0.5">{pengaturan?.subJudul || 'Tanda Tangan Elektronik'}</p>
+                <h1 className="text-lg font-bold tracking-tight text-slate-900">{pengaturan?.judul || 'Sistem TTE'}</h1>
+                <p className="text-[10px] text-blue-500 -mt-0.5">{pengaturan?.subJudul || 'Tanda Tangan Elektronik'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <a
                 href="#verify"
-                className="text-sm text-emerald-100 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-white/10"
+                className="text-sm text-slate-600 hover:text-blue-600 transition-colors px-3 py-1.5 rounded-md hover:bg-blue-50"
               >
                 Verifikasi
               </a>
               <a
                 href="#berita"
-                className="text-sm text-emerald-100 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-white/10"
+                className="text-sm text-slate-600 hover:text-blue-600 transition-colors px-3 py-1.5 rounded-md hover:bg-blue-50"
               >
                 Berita
               </a>
               <Button
                 onClick={() => setLoginDialogOpen(true)}
-                className="ml-2 bg-white text-emerald-800 hover:bg-emerald-50 gap-2 h-9 px-4 font-semibold"
+                className="ml-2 bg-blue-600 hover:bg-blue-700 text-white gap-2 h-9 px-4 font-semibold rounded-xl shadow-sm transition-all duration-200"
               >
                 <LogIn className="w-4 h-4" />
                 Login
@@ -469,10 +469,10 @@ export default function PublicPage() {
       </header>
 
       {/* Hero Banner / Carousel */}
-      <section className="relative bg-emerald-900 overflow-hidden">
+      <section className="relative bg-blue-900 overflow-hidden">
         {bannersLoading ? (
           <div className="h-64 sm:h-80 lg:h-96 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-300" />
+            <Loader2 className="w-8 h-8 animate-spin text-blue-300" />
           </div>
         ) : banners.length > 0 ? (
           <div className="relative h-64 sm:h-80 lg:h-96">
@@ -490,18 +490,18 @@ export default function PublicPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-700 flex items-center justify-center">
-                    <ImageIcon className="w-20 h-20 text-emerald-500/30" />
+                  <div className="w-full h-full bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center">
+                    <ImageIcon className="w-20 h-20 text-blue-400/30" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-950/80 via-blue-900/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10 lg:p-16">
                   <div className="max-w-3xl">
                     <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 drop-shadow-lg">
                       {banner.judul}
                     </h2>
                     {banner.deskripsi && (
-                      <p className="text-sm sm:text-base text-gray-200 line-clamp-2 drop-shadow">
+                      <p className="text-sm sm:text-base text-blue-100 line-clamp-2 drop-shadow">
                         {banner.deskripsi}
                       </p>
                     )}
@@ -510,15 +510,15 @@ export default function PublicPage() {
               </div>
             ))}
             {banners.length > 1 && (
-              <div className="absolute bottom-4 right-6 flex gap-2">
+              <div className="absolute bottom-4 right-6 flex gap-2 items-center">
                 {banners.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentBanner(idx)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    className={`rounded-full transition-all duration-300 ${
                       idx === currentBanner
-                        ? 'bg-white scale-110'
-                        : 'bg-white/40 hover:bg-white/60'
+                        ? 'bg-white w-6 h-1.5'
+                        : 'bg-white/40 hover:bg-white/60 w-1.5 h-1.5'
                     }`}
                     aria-label={`Banner ${idx + 1}`}
                   />
@@ -527,13 +527,16 @@ export default function PublicPage() {
             )}
           </div>
         ) : (
-          <div className="h-64 sm:h-80 lg:h-96 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-700 flex items-center justify-center">
-            <div className="text-center px-4">
-              <ShieldCheck className="w-16 h-16 mx-auto text-emerald-300/50 mb-4" />
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+          <div className="h-64 sm:h-80 lg:h-96 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-800/50 to-transparent" />
+            <div className="text-center px-4 relative z-10">
+              <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5">
+                <ShieldCheck className="w-10 h-10 text-blue-200" />
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3 tracking-tight">
                 Sistem Tanda Tangan Elektronik
               </h2>
-              <p className="text-emerald-200 text-sm sm:text-base max-w-lg mx-auto">
+              <p className="text-blue-200 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
                 Verifikasi keaslian dokumen elektronik yang ditandatangani secara digital
               </p>
             </div>
@@ -542,23 +545,23 @@ export default function PublicPage() {
       </section>
 
       {/* Verification Section */}
-      <section id="verify" className="py-12 sm:py-16 bg-gradient-to-b from-emerald-50 to-white">
+      <section id="verify" className="py-16 sm:py-20 bg-gradient-to-b from-blue-50/60 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 mb-4">
-              <ShieldCheck className="w-4 h-4 text-emerald-700" />
-              <span className="text-sm font-medium text-emerald-800">Verifikasi Dokumen</span>
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-1.5 mb-4">
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-700">Verifikasi Dokumen</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Cek Keaslian Dokumen
             </h2>
-            <p className="mt-2 text-muted-foreground max-w-lg mx-auto">
+            <p className="mt-2 text-slate-500 max-w-lg mx-auto">
               Upload dokumen yang akan diverifikasi keasliannya
             </p>
           </div>
 
           <div className="max-w-xl mx-auto">
-            <Card className="border-emerald-200 shadow-lg">
+            <Card className="border-blue-200 shadow-xl shadow-blue-100/50 rounded-2xl">
               <CardContent className="p-6">
                 {/* File Upload Area */}
                 <div
@@ -567,33 +570,33 @@ export default function PublicPage() {
                   onDrop={handleDrop}
                   className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
                     isDragOver
-                      ? 'border-emerald-500 bg-emerald-50'
+                      ? 'border-blue-500 bg-blue-50'
                       : verifyFile
-                        ? 'border-emerald-300 bg-emerald-50/50'
-                        : 'border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/30'
+                        ? 'border-blue-300 bg-blue-50/50'
+                        : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50/30'
                   }`}
                 >
                   {verifyFile ? (
                     <div className="p-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-                          <FileText className="w-6 h-6 text-emerald-600" />
+                        <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                          <FileText className="w-6 h-6 text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate" title={verifyFile.name}>
+                          <p className="text-sm font-medium text-slate-900 truncate" title={verifyFile.name}>
                             {verifyFile.name}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-xs text-slate-500 mt-0.5">
                             {formatFileSize(verifyFile.size)}
                           </p>
                         </div>
                         <button
                           type="button"
                           onClick={handleRemoveFile}
-                          className="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors shrink-0"
+                          className="w-8 h-8 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center transition-colors shrink-0"
                           aria-label="Hapus file"
                         >
-                          <X className="w-4 h-4 text-red-600" />
+                          <X className="w-4 h-4 text-red-500" />
                         </button>
                       </div>
                     </div>
@@ -606,16 +609,16 @@ export default function PublicPage() {
                         className="sr-only"
                       />
                       <div className={`w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center transition-colors ${
-                        isDragOver ? 'bg-emerald-200' : 'bg-emerald-100'
+                        isDragOver ? 'bg-blue-200' : 'bg-blue-100'
                       }`}>
                         <Upload className={`w-6 h-6 transition-colors ${
-                          isDragOver ? 'text-emerald-700' : 'text-emerald-600'
+                          isDragOver ? 'text-blue-700' : 'text-blue-600'
                         }`} />
                       </div>
-                      <p className="text-sm font-medium text-gray-700 mb-1">
+                      <p className="text-sm font-medium text-slate-700 mb-1">
                         {isDragOver ? 'Lepaskan file di sini' : 'Klik atau seret file ke sini'}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-slate-500">
                         PDF, DOC, DOCX, JPG, PNG (Maks. 25MB)
                       </p>
                     </label>
@@ -626,7 +629,7 @@ export default function PublicPage() {
                 <Button
                   onClick={handleVerifyUpload}
                   disabled={!verifyFile || verifyLoading}
-                  className="w-full mt-4 h-11 bg-emerald-700 hover:bg-emerald-800 text-white gap-2"
+                  className="w-full mt-4 h-11 bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-xl font-semibold transition-all duration-200 shadow-sm"
                 >
                   {verifyLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -637,17 +640,17 @@ export default function PublicPage() {
                 </Button>
 
                 <div className="mt-4 grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-                    <ShieldCheck className="w-5 h-5 mx-auto text-emerald-600 mb-1" />
-                    <p className="text-[11px] text-emerald-700 font-medium">Aman & Terpercaya</p>
+                  <div className="text-center p-3 rounded-xl bg-blue-50 border border-blue-100">
+                    <ShieldCheck className="w-5 h-5 mx-auto text-blue-600 mb-1" />
+                    <p className="text-[11px] text-blue-700 font-medium">Aman & Terpercaya</p>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-                    <FileText className="w-5 h-5 mx-auto text-emerald-600 mb-1" />
-                    <p className="text-[11px] text-emerald-700 font-medium">Sesuai UU ITE</p>
+                  <div className="text-center p-3 rounded-xl bg-blue-50 border border-blue-100">
+                    <FileText className="w-5 h-5 mx-auto text-blue-600 mb-1" />
+                    <p className="text-[11px] text-blue-700 font-medium">Sesuai UU ITE</p>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-                    <CheckCircle className="w-5 h-5 mx-auto text-emerald-600 mb-1" />
-                    <p className="text-[11px] text-emerald-700 font-medium">Hash SHA-256</p>
+                  <div className="text-center p-3 rounded-xl bg-blue-50 border border-blue-100">
+                    <CheckCircle className="w-5 h-5 mx-auto text-blue-600 mb-1" />
+                    <p className="text-[11px] text-blue-700 font-medium">Hash SHA-256</p>
                   </div>
                 </div>
               </CardContent>
@@ -657,15 +660,15 @@ export default function PublicPage() {
       </section>
 
       {/* Berita Section */}
-      <section id="berita" className="py-12 sm:py-16 bg-white">
+      <section id="berita" className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-10">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 mb-3">
-                <Newspaper className="w-4 h-4 text-emerald-700" />
-                <span className="text-sm font-medium text-emerald-800">Berita & Informasi</span>
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-1.5 mb-3">
+                <Newspaper className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">Berita & Informasi</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 Berita Terbaru
               </h2>
             </div>
@@ -674,21 +677,21 @@ export default function PublicPage() {
           {beritaLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i} className="overflow-hidden">
-                  <div className="h-48 bg-muted animate-pulse" />
+                <Card key={i} className="overflow-hidden rounded-2xl border border-slate-100">
+                  <div className="h-48 bg-blue-50 animate-pulse" />
                   <CardContent className="p-5 space-y-3">
-                    <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
-                    <div className="h-3 bg-muted rounded animate-pulse w-full" />
-                    <div className="h-3 bg-muted rounded animate-pulse w-2/3" />
+                    <div className="h-4 bg-blue-50 rounded animate-pulse w-3/4" />
+                    <div className="h-3 bg-blue-50 rounded animate-pulse w-full" />
+                    <div className="h-3 bg-blue-50 rounded animate-pulse w-2/3" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : beritaList.length === 0 ? (
-            <Card className="border-dashed">
+            <Card className="border-dashed rounded-2xl">
               <CardContent className="py-12 text-center">
-                <Newspaper className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground">Belum ada berita yang dipublikasikan</p>
+                <Newspaper className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                <p className="text-slate-500">Belum ada berita yang dipublikasikan</p>
               </CardContent>
             </Card>
           ) : (
@@ -696,10 +699,10 @@ export default function PublicPage() {
               {beritaList.map((berita) => (
                 <Card
                   key={berita.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                  className="overflow-hidden border border-slate-100 rounded-2xl hover:shadow-xl hover:shadow-blue-100/60 transition-all duration-300 cursor-pointer group"
                   onClick={() => setSelectedBerita(berita)}
                 >
-                  <div className="relative h-48 bg-muted overflow-hidden">
+                  <div className="relative h-48 bg-slate-100 overflow-hidden">
                     {berita.imagePath ? (
                       <img
                         src={berita.imagePath.startsWith('http') ? berita.imagePath : `/api/berita/image/${berita.imagePath}`}
@@ -707,8 +710,8 @@ export default function PublicPage() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100">
-                        <Newspaper className="w-10 h-10 text-emerald-300" />
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+                        <Newspaper className="w-10 h-10 text-blue-300" />
                       </div>
                     )}
                     {berita.kategori && (
@@ -722,15 +725,15 @@ export default function PublicPage() {
                     )}
                   </div>
                   <CardContent className="p-5">
-                    <h3 className="font-semibold text-base line-clamp-2 mb-2 group-hover:text-emerald-700 transition-colors">
+                    <h3 className="font-semibold text-base line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors text-slate-900">
                       {berita.judul}
                     </h3>
                     {berita.ringkas && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                      <p className="text-sm text-slate-500 line-clamp-2 mb-3">
                         {berita.ringkas}
                       </p>
                     )}
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between text-xs text-slate-500">
                       <div className="flex items-center gap-3">
                         {berita.penulis && (
                           <span className="flex items-center gap-1">
@@ -743,7 +746,7 @@ export default function PublicPage() {
                           {formatDate(berita.createdAt)}
                         </span>
                       </div>
-                      <span className="flex items-center gap-0.5 text-emerald-700 font-medium group-hover:gap-1.5 transition-all">
+                      <span className="flex items-center gap-0.5 text-blue-600 font-medium group-hover:gap-1.5 transition-all">
                         Baca <ArrowRight className="w-3 h-3" />
                       </span>
                     </div>
@@ -756,50 +759,50 @@ export default function PublicPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-emerald-900 text-white mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <footer className="bg-slate-900 text-white mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div>
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-4">
                 {pengaturan?.headerLogoPath ? (
                   <img
                     src={pengaturan.headerLogoPath.startsWith('http') ? pengaturan.headerLogoPath : `/api/pengaturan/header-logo/${pengaturan.headerLogoPath}`}
                     alt="Logo"
-                    className="w-9 h-9 rounded-lg object-contain bg-white/15 p-1"
+                    className="w-9 h-9 rounded-xl object-contain bg-white/10 p-1 border border-white/10"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center">
-                    <ShieldCheck className="w-5 h-5" />
+                  <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-blue-400" />
                   </div>
                 )}
                 <div>
-                  <h3 className="font-bold text-base">{pengaturan?.judul || 'Sistem TTE'}</h3>
-                  <p className="text-emerald-300 text-xs">{pengaturan?.subJudul || 'Tanda Tangan Elektronik'}</p>
+                  <h3 className="font-bold text-base text-white">{pengaturan?.judul || 'Sistem TTE'}</h3>
+                  <p className="text-blue-400 text-xs">{pengaturan?.subJudul || 'Tanda Tangan Elektronik'}</p>
                 </div>
               </div>
-              <p className="text-emerald-200 text-sm leading-relaxed">
+              <p className="text-slate-400 text-sm leading-relaxed">
                 Sistem Tanda Tangan Elektronik yang sesuai dengan Undang-Undang Nomor 11 Tahun 2008
                 tentang Informasi dan Transaksi Elektronik (UU ITE).
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-3">Tautan</h4>
-              <ul className="space-y-2 text-sm text-emerald-200">
+              <h4 className="font-semibold text-white mb-3">Tautan</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
                 <li>
-                  <a href="#verify" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <a href="#verify" className="hover:text-blue-400 transition-colors flex items-center gap-1.5">
                     <ChevronRight className="w-3 h-3" /> Verifikasi Dokumen
                   </a>
                 </li>
                 <li>
-                  <a href="#berita" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <a href="#berita" className="hover:text-blue-400 transition-colors flex items-center gap-1.5">
                     <ChevronRight className="w-3 h-3" /> Berita & Informasi
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-3">Dasar Hukum</h4>
-              <ul className="space-y-2 text-sm text-emerald-200">
+              <h4 className="font-semibold text-white mb-3">Dasar Hukum</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
                 <li className="flex items-start gap-1.5">
                   <ChevronRight className="w-3 h-3 mt-1 shrink-0" /> UU No. 11 Tahun 2008 tentang ITE
                 </li>
@@ -809,8 +812,8 @@ export default function PublicPage() {
               </ul>
             </div>
           </div>
-          <Separator className="my-6 bg-emerald-700" />
-          <div className="text-center text-xs text-emerald-300">
+          <Separator className="my-6 bg-slate-700" />
+          <div className="text-center text-xs text-slate-500">
             &copy; {new Date().getFullYear()} {pengaturan?.judul || 'Sistem TTE'} - Pemerintah Daerah
           </div>
         </div>
@@ -821,7 +824,7 @@ export default function PublicPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-emerald-600" />
+              <Shield className="w-5 h-5 text-blue-600" />
               Login Admin
             </DialogTitle>
             <DialogDescription>
@@ -835,7 +838,7 @@ export default function PublicPage() {
               </div>
             )}
             {setupStatus === 'loading' && (
-              <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md px-4 py-3 text-sm">
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 rounded-md px-4 py-3 text-sm">
                 Mempersiapkan akun admin default... Coba lagi sebentar.
               </div>
             )}
@@ -849,6 +852,7 @@ export default function PublicPage() {
                 onChange={(e) => setLoginUsername(e.target.value)}
                 disabled={loginLoading}
                 autoComplete="username"
+                className="focus-visible:ring-blue-500"
               />
             </div>
             <div className="space-y-2">
@@ -862,12 +866,12 @@ export default function PublicPage() {
                   onChange={(e) => setLoginPassword(e.target.value)}
                   disabled={loginLoading}
                   autoComplete="current-password"
-                  className="pr-10"
+                  className="pr-10 focus-visible:ring-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setLoginShowPassword(!loginShowPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
                   tabIndex={-1}
                   aria-label={loginShowPassword ? 'Sembunyikan password' : 'Tampilkan password'}
                 >
@@ -877,7 +881,7 @@ export default function PublicPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-200"
               disabled={loginLoading}
             >
               {loginLoading ? (
@@ -892,7 +896,7 @@ export default function PublicPage() {
                 </>
               )}
             </Button>
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-slate-500">
               Jika belum pernah login, coba: <strong>admin</strong> / <strong>admin123</strong>
             </p>
           </form>
@@ -904,7 +908,7 @@ export default function PublicPage() {
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              <ShieldCheck className="w-5 h-5 text-blue-600" />
               Hasil Verifikasi
             </DialogTitle>
           </DialogHeader>
@@ -931,45 +935,45 @@ export default function PublicPage() {
             <div className="space-y-4">
               {verifyData.isStamp || verifyData.status === 'tte_stamp' ? (
                 <>
-                  <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-                    <Stamp className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
+                  <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                    <Stamp className="w-5 h-5 shrink-0 text-blue-600 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-emerald-800">Stempel TTE Valid</p>
-                      <p className="text-xs text-emerald-700 mt-0.5">
+                      <p className="text-sm font-medium text-blue-800">Stempel TTE Valid</p>
+                      <p className="text-xs text-blue-700 mt-0.5">
                         Stempel Tanda Tangan Elektronik yang diterbitkan secara resmi.
                       </p>
                     </div>
                   </div>
                   <Separator />
                   <div className="space-y-2.5">
-                    <h4 className="text-sm font-semibold text-muted-foreground">Informasi Penandatangan</h4>
+                    <h4 className="text-sm font-semibold text-slate-500">Informasi Penandatangan</h4>
                     <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-                      <span className="text-muted-foreground">Nama</span>
-                      <span className="font-medium">{verifyData.pegawai?.nama || '-'}</span>
-                      <span className="text-muted-foreground">NIP</span>
-                      <span className="font-mono text-xs">{verifyData.pegawai?.nip || '-'}</span>
-                      <span className="text-muted-foreground">Jabatan</span>
-                      <span>{verifyData.pegawai?.jabatan || '-'}</span>
-                      <span className="text-muted-foreground">OPD</span>
-                      <span>{verifyData.pegawai?.opd || '-'}</span>
+                      <span className="text-slate-500">Nama</span>
+                      <span className="font-medium text-slate-900">{verifyData.pegawai?.nama || '-'}</span>
+                      <span className="text-slate-500">NIP</span>
+                      <span className="font-mono text-xs text-slate-700">{verifyData.pegawai?.nip || '-'}</span>
+                      <span className="text-slate-500">Jabatan</span>
+                      <span className="text-slate-700">{verifyData.pegawai?.jabatan || '-'}</span>
+                      <span className="text-slate-500">OPD</span>
+                      <span className="text-slate-700">{verifyData.pegawai?.opd || '-'}</span>
                     </div>
                   </div>
                   <Separator />
                   <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <Calendar className="w-5 h-5 text-slate-400" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Tanggal Diterbitkan</p>
-                      <p className="text-sm font-medium">{verifyData.tglTtd ? formatDateTime(verifyData.tglTtd) : '-'}</p>
+                      <p className="text-xs text-slate-500">Tanggal Diterbitkan</p>
+                      <p className="text-sm font-medium text-slate-900">{verifyData.tglTtd ? formatDateTime(verifyData.tglTtd) : '-'}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
+                    <span className="text-sm text-slate-500">Status</span>
                     {verifyData.isExpired ? (
                       <Badge className="bg-red-100 text-red-800 border-red-200">
                         <XCircle className="w-3 h-3" /> Kedaluwarsa
                       </Badge>
                     ) : (
-                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                         <CheckCircle className="w-3 h-3" /> Valid
                       </Badge>
                     )}
@@ -1002,22 +1006,22 @@ export default function PublicPage() {
                   <Separator />
 
                   <div className="space-y-2.5">
-                    <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-slate-500 flex items-center gap-2">
                       <FileText className="w-4 h-4" /> Detail Dokumen
                     </h4>
                     <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-                      <span className="text-muted-foreground">Judul</span>
-                      <span className="font-semibold">{verifyData.judulDokumen || verifyData.namaFile || '-'}</span>
+                      <span className="text-slate-500">Judul</span>
+                      <span className="font-semibold text-slate-900">{verifyData.judulDokumen || verifyData.namaFile || '-'}</span>
                       {verifyData.namaFile && verifyData.judulDokumen && (
                         <>
-                          <span className="text-muted-foreground">File</span>
-                          <span className="font-mono text-xs break-all">{verifyData.namaFile}</span>
+                          <span className="text-slate-500">File</span>
+                          <span className="font-mono text-xs break-all text-slate-700">{verifyData.namaFile}</span>
                         </>
                       )}
-                      <span className="text-muted-foreground">Masa Berlaku</span>
-                      <span className="flex items-center gap-1.5">
+                      <span className="text-slate-500">Masa Berlaku</span>
+                      <span className="flex items-center gap-1.5 text-slate-700">
                         {verifyData.aktifSelamanya ? (
-                          <><CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Aktif sampai di-nonaktifkan</>
+                          <><CheckCircle className="w-3.5 h-3.5 text-blue-500" /> Aktif sampai di-nonaktifkan</>
                         ) : (
                           <><Clock className="w-3.5 h-3.5 text-amber-500" /> {verifyData.tanggalExpired ? `Hingga ${formatDate(verifyData.tanggalExpired)}` : '-'}</>
                         )}
@@ -1028,50 +1032,50 @@ export default function PublicPage() {
                   <Separator />
 
                   <div className="space-y-2.5">
-                    <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-slate-500 flex items-center gap-2">
                       <User className="w-4 h-4" /> Penandatangan
                     </h4>
                     <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-                      <span className="text-muted-foreground">Nama</span>
-                      <span className="font-medium">{verifyData.pegawai?.nama || '-'}</span>
-                      <span className="text-muted-foreground">NIP</span>
-                      <span className="font-mono text-xs">{verifyData.pegawai?.nip || '-'}</span>
-                      <span className="text-muted-foreground">Jabatan</span>
-                      <span>{verifyData.pegawai?.jabatan || '-'}</span>
-                      <span className="text-muted-foreground">OPD</span>
-                      <span>{verifyData.pegawai?.opd || '-'}</span>
+                      <span className="text-slate-500">Nama</span>
+                      <span className="font-medium text-slate-900">{verifyData.pegawai?.nama || '-'}</span>
+                      <span className="text-slate-500">NIP</span>
+                      <span className="font-mono text-xs text-slate-700">{verifyData.pegawai?.nip || '-'}</span>
+                      <span className="text-slate-500">Jabatan</span>
+                      <span className="text-slate-700">{verifyData.pegawai?.jabatan || '-'}</span>
+                      <span className="text-slate-500">OPD</span>
+                      <span className="text-slate-700">{verifyData.pegawai?.opd || '-'}</span>
                     </div>
                   </div>
 
                   <Separator />
 
                   <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <Calendar className="w-5 h-5 text-slate-400" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Tanggal Tanda Tangan</p>
-                      <p className="text-sm font-medium">{verifyData.tglTtd ? formatDateTime(verifyData.tglTtd) : '-'}</p>
+                      <p className="text-xs text-slate-500">Tanggal Tanda Tangan</p>
+                      <p className="text-sm font-medium text-slate-900">{verifyData.tglTtd ? formatDateTime(verifyData.tglTtd) : '-'}</p>
                     </div>
                   </div>
 
                   {verifyData.keterangan && (
-                    <div className="rounded-lg border bg-muted/50 p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Keterangan</p>
-                      <p className="text-sm">{verifyData.keterangan}</p>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-xs text-slate-500 mb-1">Keterangan</p>
+                      <p className="text-sm text-slate-700">{verifyData.keterangan}</p>
                     </div>
                   )}
 
                   {verifyData.tembusan && (
-                    <div className="rounded-lg border bg-muted/50 p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Tembusan</p>
-                      <p className="text-sm">{verifyData.tembusan}</p>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-xs text-slate-500 mb-1">Tembusan</p>
+                      <p className="text-sm text-slate-700">{verifyData.tembusan}</p>
                     </div>
                   )}
 
                   <Separator />
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status Keaslian</span>
-                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                    <span className="text-sm text-slate-500">Status Keaslian</span>
+                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                       <CheckCircle className="w-3 h-3" /> Valid
                     </Badge>
                   </div>
@@ -1080,15 +1084,15 @@ export default function PublicPage() {
                     <>
                       <Separator />
                       <div className="space-y-1.5">
-                        <p className="text-xs text-muted-foreground">Hash SHA-256</p>
-                        <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2">
-                          <code className="flex-1 text-xs font-mono break-all">
+                        <p className="text-xs text-slate-500">Hash SHA-256</p>
+                        <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                          <code className="flex-1 text-xs font-mono break-all text-slate-700">
                             {truncateHash(verifyData.hashFile)}
                           </code>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="w-7 h-7 shrink-0"
+                            className="w-7 h-7 shrink-0 hover:bg-blue-50 hover:text-blue-600"
                             onClick={() => handleCopyHash(verifyData.hashFile!)}
                           >
                             <Copy className="w-3.5 h-3.5" />
@@ -1100,10 +1104,10 @@ export default function PublicPage() {
 
                   <Separator />
 
-                  <div className="rounded-lg border bg-green-50 p-3">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
                     <div className="flex items-start gap-2">
-                      <ShieldCheck className="w-4 h-4 shrink-0 text-green-600 mt-0.5" />
-                      <p className="text-xs text-green-800">
+                      <ShieldCheck className="w-4 h-4 shrink-0 text-blue-600 mt-0.5" />
+                      <p className="text-xs text-blue-800">
                         Dokumen ini ditandatangani secara elektronik sesuai UU No. 11 Tahun 2008
                         tentang Informasi dan Transaksi Elektronik (UU ITE).
                       </p>
@@ -1120,12 +1124,12 @@ export default function PublicPage() {
       <Dialog open={!!selectedBerita} onOpenChange={(open) => !open && setSelectedBerita(null)}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl pr-8">{selectedBerita?.judul}</DialogTitle>
+            <DialogTitle className="text-xl pr-8 text-slate-900">{selectedBerita?.judul}</DialogTitle>
           </DialogHeader>
           {selectedBerita && (
             <div className="space-y-4">
               {selectedBerita.imagePath && (
-                <div className="rounded-lg overflow-hidden">
+                <div className="rounded-xl overflow-hidden">
                   <img
                     src={selectedBerita.imagePath.startsWith('http') ? selectedBerita.imagePath : `/api/berita/image/${selectedBerita.imagePath}`}
                     alt={selectedBerita.judul}
@@ -1133,7 +1137,7 @@ export default function PublicPage() {
                   />
                 </div>
               )}
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-3 text-sm text-slate-500">
                 {selectedBerita.kategori && (
                   <Badge className={kategoriColor[selectedBerita.kategori] || 'bg-gray-100 text-gray-800 border-gray-200'}>
                     <Tag className="w-3 h-3" /> {selectedBerita.kategori}
@@ -1149,7 +1153,7 @@ export default function PublicPage() {
                 </span>
               </div>
               <Separator />
-              <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
+              <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
                 {selectedBerita.isi}
               </div>
             </div>
