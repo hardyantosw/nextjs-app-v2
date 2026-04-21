@@ -139,17 +139,27 @@ export function getTokenFromRequest(request: Request): string | null {
 }
 
 /**
+ * Check if running in production (HTTPS)
+ */
+function isProduction(): boolean {
+  return process.env.NODE_ENV === 'production';
+}
+
+/**
  * Create session cookie string for Set-Cookie header
+ * In production (Vercel/HTTPS), we need the Secure flag
  */
 export function createSessionCookie(token: string): string {
-  return `${SESSION_COOKIE_NAME}=${token}; HttpOnly; Path=/; Max-Age=${SESSION_EXPIRY_MS / 1000}; SameSite=Lax`;
+  const secure = isProduction() ? '; Secure' : '';
+  return `${SESSION_COOKIE_NAME}=${token}; HttpOnly; Path=/; Max-Age=${SESSION_EXPIRY_MS / 1000}; SameSite=Lax${secure}`;
 }
 
 /**
  * Create logout cookie string (expires immediately)
  */
 export function createLogoutCookie(): string {
-  return `${SESSION_COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax`;
+  const secure = isProduction() ? '; Secure' : '';
+  return `${SESSION_COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax${secure}`;
 }
 
 /**
