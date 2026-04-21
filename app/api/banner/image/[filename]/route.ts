@@ -42,7 +42,17 @@ export async function GET(
     // Check if file exists
     const exists = await fileExists(filePath);
     if (!exists) {
-      return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 404 });
+      // Return a placeholder SVG if image doesn't exist
+      const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+        <rect width="800" height="400" fill="#e0e0e0"/>
+        <text x="400" y="200" font-family="Arial, sans-serif" font-size="24" fill="#999" text-anchor="middle">Gambar tidak tersedia</text>
+      </svg>`;
+      return new NextResponse(placeholderSvg, {
+        headers: {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     // Download file from storage

@@ -43,10 +43,17 @@ export async function GET(
     // Check if file exists
     const exists = await fileExists(filePath);
     if (!exists) {
-      return NextResponse.json(
-        { error: 'File logo tidak ditemukan' },
-        { status: 404 }
-      );
+      // Return a placeholder SVG if logo doesn't exist
+      const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+        <rect width="200" height="60" fill="#f0f0f0"/>
+        <text x="100" y="35" font-family="Arial, sans-serif" font-size="12" fill="#999" text-anchor="middle">Logo tidak tersedia</text>
+      </svg>`;
+      return new NextResponse(placeholderSvg, {
+        headers: {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     // Download file
