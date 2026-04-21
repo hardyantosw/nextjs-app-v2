@@ -171,8 +171,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: dokumen }, { status: 201 });
   } catch (error) {
     console.error('Error generating TTE:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    console.error('Stack:', errorStack);
+    
+    // Check for specific errors
+    if (errorMessage.includes('BLOB_READ_WRITE_TOKEN')) {
+      return NextResponse.json(
+        { error: 'Konfigurasi storage belum lengkap. Hubungi administrator untuk setup Vercel Blob.' },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
-      { error: 'Gagal membuat TTE' },
+      { error: 'Gagal membuat TTE', detail: errorMessage },
       { status: 500 }
     );
   }

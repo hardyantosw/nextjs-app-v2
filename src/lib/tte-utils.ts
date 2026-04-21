@@ -193,13 +193,19 @@ export async function signPDF(
 
   // Save signed PDF and return buffer
   const signedPdfBytes = await pdfDoc.save();
-  return signedPdfBytes;
+  return Buffer.from(signedPdfBytes);
 }
 
 /**
- * Ensure uploads directory exists
+ * Ensure uploads directory exists (local development only)
+ * On Vercel, we use Vercel Blob storage, so this is a no-op
  */
 export function ensureUploadsDir() {
+  // Skip in production/Vercel environment
+  if (process.env.VERCEL === '1' || process.env.NODE_ENV === 'production') {
+    return;
+  }
+  
   const dirs = [
     path.join(process.cwd(), 'uploads'),
     path.join(process.cwd(), 'uploads', 'original'),

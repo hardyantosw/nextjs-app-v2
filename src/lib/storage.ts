@@ -1,6 +1,6 @@
 /**
  * Storage abstraction layer for both local development and cloud production.
- * 
+ *
  * Local (development): Uses file system
  * Cloud (production/Vercel): Uses Vercel Blob Storage
  */
@@ -21,14 +21,20 @@ async function getBlobClient() {
 
   if (USE_VERCEL_BLOB) {
     try {
-      const { put, get, del } = await import('@vercel/blob')
-      blobClient = { put, get, del }
+      // Check for BLOB_READ_WRITE_TOKEN
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        console.error('BLOB_READ_WRITE_TOKEN not configured')
+        throw new Error(
+          'BLOB_READ_WRITE_TOKEN not configured. Please add it in Vercel Environment Variables.'
+        )
+      }
+      
+      const { put, del } = await import('@vercel/blob')
+      blobClient = { put, del }
       return blobClient
     } catch (error) {
-      console.error('Failed to import @vercel/blob. Make sure it is installed.', error)
-      throw new Error(
-        'Vercel Blob not available. Install with: npm install @vercel/blob'
-      )
+      console.error('Failed to initialize Vercel Blob:', error)
+      throw error
     }
   }
 
@@ -78,31 +84,29 @@ export async function uploadFile(
 
 /**
  * Download a file from storage
- * 
+ *
  * Input:
  * - In development: relative path like "dokumen/abc123.pdf"
- * - In production: can be full URL or pathname
+ * - In production: full URL from Vercel Blob
  */
 export async function downloadFile(filePathOrUrl: string): Promise<Buffer> {
   try {
     if (USE_VERCEL_BLOB) {
-      const blobClient = await getBlobClient()
-      
-      // Extract pathname from URL if full URL is provided
-      let pathname = filePathOrUrl
+      // In Vercel Blob, files are accessed via their full URL
+      // If it's already a full URL, fetch directly
       if (filePathOrUrl.startsWith('http')) {
-        try {
-          pathname = new URL(filePathOrUrl).pathname.replace(/^\//, '')
-        } catch {
-          pathname = filePathOrUrl
+        const response = await fetch(filePathOrUrl)
+        if (!response.ok) {
+          throw new Error(`Failed to download: ${response.status} ${response.statusText}`)
         }
+        const arrayBuffer = await response.arrayBuffer()
+        return Buffer.from(arrayBuffer)
       }
-
-      const blob = await blobClient.get(pathname)
-      if (!blob) {
-        throw new Error(`File not found: ${filePathOrUrl}`)
-      }
-      return Buffer.from(await blob.arrayBuffer())
+      
+      // If it's a relative path, we need to construct the URL
+      // This shouldn't normally happen in production, but handle it
+      console.warn('Relative path provided in production:', filePathOrUrl)
+      throw new Error(`Cannot resolve relative path in production: ${filePathOrUrl}`)
     } else {
       // Local development
       const fullPath = path.join(process.cwd(), 'uploads', filePathOrUrl)
@@ -153,20 +157,13 @@ export async function deleteFile(filePathOrUrl: string): Promise<void> {
 export async function fileExists(filePathOrUrl: string): Promise<boolean> {
   try {
     if (USE_VERCEL_BLOB) {
-      const blobClient = await getBlobClient()
-
-      // Extract pathname from URL if full URL is provided
-      let pathname = filePathOrUrl
+      // In Vercel Blob, check if URL is accessible via HEAD request
       if (filePathOrUrl.startsWith('http')) {
-        try {
-          pathname = new URL(filePathOrUrl).pathname.replace(/^\//, '')
-        } catch {
-          pathname = filePathOrUrl
-        }
+        const response = await fetch(filePathOrUrl, { method: 'HEAD' })
+        return response.ok
       }
-
-      const blob = await blobClient.get(pathname)
-      return blob !== null
+      // Relative paths don't exist in production
+      return false
     } else {
       // Local development
       const fullPath = path.join(process.cwd(), 'uploads', filePathOrUrl)

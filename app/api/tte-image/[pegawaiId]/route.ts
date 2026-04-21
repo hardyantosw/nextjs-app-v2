@@ -85,16 +85,21 @@ export async function GET(
       if (isQrCodeOnly) {
         // Serve the QR code with logo
         try {
-          const qrFileExists = await fileExists(`qrcodes/tte_${tokenVerifikasi}.png`);
-          if (qrFileExists) {
-            const qrBuffer = await downloadFile(`qrcodes/tte_${tokenVerifikasi}.png`);
-            return new NextResponse(qrBuffer, {
-              headers: {
-                'Content-Type': 'image/png',
-                'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
-                'Cache-Control': 'no-cache',
-              },
-            });
+          // In production, check if the URL exists
+          if (existingStamp.pathFileTtd) {
+            // Generate QR code URL from the stored path
+            const qrUrl = existingStamp.pathFileTtd.replace(/\.png$/, '_qr.png');
+            const qrFileExists = await fileExists(qrUrl);
+            if (qrFileExists) {
+              const qrBuffer = await downloadFile(qrUrl);
+              return new NextResponse(new Uint8Array(qrBuffer), {
+                headers: {
+                  'Content-Type': 'image/png',
+                  'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
+                  'Cache-Control': 'no-cache',
+                },
+              });
+            }
           }
         } catch (error) {
           console.warn('Failed to load QR code:', error);
@@ -103,15 +108,17 @@ export async function GET(
       } else {
         // Default: serve the composite TTE stamp
         try {
-          const tteFileExists = await fileExists(`tte-images/${existingStamp.tokenVerifikasi}.png`);
-          if (tteFileExists && existingStamp.pathFileTtd) {
-            const tteBuffer = await downloadFile(existingStamp.pathFileTtd);
-            return new NextResponse(tteBuffer, {
-              headers: {
-                'Content-Type': 'image/png',
-                'Content-Disposition': `attachment; filename="TTE_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
-              },
-            });
+          if (existingStamp.pathFileTtd) {
+            const tteFileExists = await fileExists(existingStamp.pathFileTtd);
+            if (tteFileExists) {
+              const tteBuffer = await downloadFile(existingStamp.pathFileTtd);
+              return new NextResponse(new Uint8Array(tteBuffer), {
+                headers: {
+                  'Content-Type': 'image/png',
+                  'Content-Disposition': `attachment; filename="TTE_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
+                },
+              });
+            }
           }
         } catch (error) {
           console.warn('Failed to load TTE image:', error);
@@ -145,7 +152,7 @@ export async function GET(
     if (isQrCodeOnly) {
       // Upload and serve the QR code with logo only
       await uploadFile(`qrcodes/tte_${tokenVerifikasi}.png`, qrBuffer, { contentType: 'image/png' });
-      return new NextResponse(qrBuffer, {
+      return new NextResponse(new Uint8Array(qrBuffer), {
         headers: {
           'Content-Type': 'image/png',
           'Content-Disposition': `attachment; filename="QRCode_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
@@ -224,7 +231,7 @@ export async function GET(
     }
 
     // 7. Return image
-    return new NextResponse(bordered, {
+    return new NextResponse(new Uint8Array(bordered), {
       headers: {
         'Content-Type': 'image/png',
         'Content-Disposition': `attachment; filename="TTE_${pegawai.nama.replace(/\s+/g, '_')}.png"`,
@@ -233,8 +240,20 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error generating TTE image:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    console.error('Stack:', errorStack);
+    
+    // Check for specific errors
+    if (errorMessage.includes('BLOB_READ_WRITE_TOKEN')) {
+      return NextResponse.json(
+        { error: 'Konfigurasi storage belum lengkap. Hubungi administrator.' },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
-      { error: 'Gagal membuat gambar TTE' },
+      { error: 'Gagal membuat gambar TTE', detail: errorMessage },
       { status: 500 }
     );
   }
