@@ -141,10 +141,47 @@ export default function DownloadTTEPage() {
     setPreviewOpen(true);
   };
 
-  // Handle download
-  const handleDownload = (pegawaiId: string) => {
-    window.open(`/api/tte-image/${pegawaiId}?qrcode=true`, '_blank');
-    toast.success('Download QR Code TTE dimulai');
+  // Handle download - use fetch with credentials to ensure auth cookie is sent
+  const handleDownload = async (pegawaiId: string) => {
+    try {
+      const response = await fetch(`/api/tte-image/${pegawaiId}?qrcode=true`, {
+        credentials: 'include', // Include cookies for authentication
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Gagal mengunduh TTE' }));
+        toast.error(errorData.error || 'Gagal mengunduh TTE');
+        return;
+      }
+      
+      // Get the blob data
+      const blob = await response.blob();
+      
+      // Get filename from Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'TTE_QRCode.png';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Download TTE berhasil');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Gagal mengunduh TTE');
+    }
   };
 
   // Filter pegawai for admin search
