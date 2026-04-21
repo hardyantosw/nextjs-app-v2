@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         status: 'signed',
       },
       include: {
-        pegawai: true,
+        Pegawai: true,
       },
     });
 
@@ -55,10 +55,10 @@ export async function POST(request: NextRequest) {
         namaFile: dokumen.namaFile,
         judulDokumen: dokumen.judulDokumen,
         pegawai: {
-          nama: dokumen.pegawai.nama,
-          nip: dokumen.pegawai.nip,
-          jabatan: dokumen.pegawai.jabatan,
-          opd: dokumen.pegawai.opd,
+          nama: dokumen.Pegawai.nama,
+          nip: dokumen.Pegawai.nip,
+          jabatan: dokumen.Pegawai.jabatan,
+          opd: dokumen.Pegawai.opd,
         },
         tglTtd: dokumen.tglTtd,
         status: dokumen.status,

@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
         aktifSelamanya: true,
       },
       include: {
-        pegawai: true,
+        Pegawai: true,
       },
     });
 

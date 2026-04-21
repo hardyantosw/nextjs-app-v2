@@ -21,7 +21,7 @@ export async function GET(
     const user = await db.user.findUnique({
       where: { id },
       include: {
-        pegawai: {
+        Pegawai: {
           select: {
             id: true,
             nama: true,
@@ -48,7 +48,7 @@ export async function GET(
         nama: user.nama,
         role: user.role,
         pegawaiId: user.pegawaiId,
-        pegawai: user.pegawai,
+        pegawai: user.Pegawai,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
@@ -186,7 +186,7 @@ export async function PUT(
       where: { id },
       data: updateData,
       include: {
-        pegawai: {
+        Pegawai: {
           select: {
             id: true,
             nama: true,
@@ -207,7 +207,7 @@ export async function PUT(
         nama: user.nama,
         role: user.role,
         pegawaiId: user.pegawaiId,
-        pegawai: user.pegawai,
+        pegawai: user.Pegawai,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },

@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { namaFile: { contains: search } },
         { judulDokumen: { contains: search } },
-        { pegawai: { nama: { contains: search } } },
-        { pegawai: { nip: { contains: search } } },
+        { Pegawai: { nama: { contains: search } } },
+        { Pegawai: { nip: { contains: search } } },
       ];
     }
 
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
       db.dokumen.findMany({
         where,
         include: {
-          pegawai: true,
+          Pegawai: true,
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
         status: 'signed',
       },
       include: {
-        pegawai: true,
+        Pegawai: true,
       },
     });
 

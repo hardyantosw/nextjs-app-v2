@@ -8,30 +8,17 @@ export async function POST() {
     if (!process.env.DATABASE_URL) {
       console.error('DATABASE_URL not configured');
       return NextResponse.json(
-        {
-          success: false,
+        { 
+          success: false, 
           message: 'Database tidak terkonfigurasi',
-          detail: 'DATABASE_URL harus diset di Vercel Environment Variables. Pastikan sudah dikonfigurasi sebelum menggunakan aplikasi.'
+          detail: 'DATABASE_URL harus diset di environment variables'
         },
         { status: 503 }
       );
     }
 
     // Check if any user exists
-    let userCount;
-    try {
-      userCount = await db.user.count();
-    } catch (dbError) {
-      console.error('Database query error:', dbError);
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Kesalahan koneksi database',
-          detail: 'Tidak dapat mengakses database. Pastikan DATABASE_URL sudah benar dan database dapat diakses dari internet.'
-        },
-        { status: 503 }
-      );
-    }
+    const userCount = await db.user.count();
 
     if (userCount > 0) {
       return NextResponse.json(
@@ -41,38 +28,16 @@ export async function POST() {
     }
 
     // Create default admin user
-    let hashedPassword;
-    try {
-      hashedPassword = hashPassword('admin123');
-    } catch (hashError) {
-      console.error('Password hashing error:', hashError);
-      return NextResponse.json(
-        { success: false, message: 'Kesalahan hashing password' },
-        { status: 500 }
-      );
-    }
+    const hashedPassword = hashPassword('admin123');
 
-    let admin;
-    try {
-      admin = await db.user.create({
-        data: {
-          username: 'admin',
-          password: hashedPassword,
-          nama: 'Administrator',
-          role: 'admin',
-        },
-      });
-    } catch (createError) {
-      console.error('User creation error:', createError);
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Gagal membuat user admin',
-          detail: 'Tidak dapat membuat user admin di database.'
-        },
-        { status: 500 }
-      );
-    }
+    const admin = await db.user.create({
+      data: {
+        username: 'admin',
+        password: hashedPassword,
+        nama: 'Administrator',
+        role: 'admin',
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -85,23 +50,18 @@ export async function POST() {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorStack = error instanceof Error ? error.stack : '';
-    const isDatabaseError = errorMessage.includes('ECONNREFUSED') ||
+    const isDatabaseError = errorMessage.includes('ECONNREFUSED') || 
                             errorMessage.includes('PrismaClientInitializationError') ||
-                            errorMessage.includes('getaddrinfo') ||
-                            errorMessage.includes('P1001') ||
-                            errorMessage.includes('P1002') ||
-                            errorMessage.includes('P1003');
+                            errorMessage.includes('getaddrinfo');
     
-    console.error('Setup error:', errorMessage);
-    console.error('Stack:', errorStack);
+    console.error('Setup error:', errorMessage, error);
     
     if (isDatabaseError) {
       return NextResponse.json(
-        {
-          success: false,
+        { 
+          success: false, 
           message: 'Database connection error',
-          detail: 'Pastikan DATABASE_URL sudah diset dengan benar di Vercel Environment Variables dan database dapat diakses dari internet.'
+          detail: 'Pastikan DATABASE_URL sudah diset dengan benar di Vercel Environment Variables'
         },
         { status: 503 }
       );

@@ -16,7 +16,7 @@ export async function GET(
     const dokumen = await db.dokumen.findUnique({
       where: { tokenVerifikasi: token },
       include: {
-        pegawai: true,
+        Pegawai: true,
       },
     });
 
@@ -39,10 +39,10 @@ export async function GET(
         data: {
           isStamp: true,
           pegawai: {
-            nama: dokumen.pegawai.nama,
-            nip: dokumen.pegawai.nip,
-            jabatan: dokumen.pegawai.jabatan,
-            opd: dokumen.pegawai.opd,
+            nama: dokumen.Pegawai.nama,
+            nip: dokumen.Pegawai.nip,
+            jabatan: dokumen.Pegawai.jabatan,
+            opd: dokumen.Pegawai.opd,
           },
           tglTtd: dokumen.tglTtd,
           status: dokumen.status,
@@ -61,10 +61,10 @@ export async function GET(
         namaFile: dokumen.namaFile,
         judulDokumen: dokumen.judulDokumen,
         pegawai: {
-          nama: dokumen.pegawai.nama,
-          nip: dokumen.pegawai.nip,
-          jabatan: dokumen.pegawai.jabatan,
-          opd: dokumen.pegawai.opd,
+          nama: dokumen.Pegawai.nama,
+          nip: dokumen.Pegawai.nip,
+          jabatan: dokumen.Pegawai.jabatan,
+          opd: dokumen.Pegawai.opd,
         },
         tglTtd: dokumen.tglTtd,
         status: dokumen.status,

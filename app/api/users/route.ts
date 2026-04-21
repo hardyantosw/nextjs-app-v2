@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          pegawai: {
+          Pegawai: {
             select: {
               id: true,
               nama: true,
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         nama: u.nama,
         role: u.role,
         pegawaiId: u.pegawaiId,
-        pegawai: u.pegawai,
+        pegawai: u.Pegawai,
         createdAt: u.createdAt,
         updatedAt: u.updatedAt,
       })),
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
         pegawaiId: role === 'pegawai' ? pegawaiId : null,
       },
       include: {
-        pegawai: {
+        Pegawai: {
           select: {
             id: true,
             nama: true,
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
           nama: user.nama,
           role: user.role,
           pegawaiId: user.pegawaiId,
-          pegawai: user.pegawai,
+          pegawai: user.Pegawai,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },

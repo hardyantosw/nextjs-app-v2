@@ -26,7 +26,7 @@ export async function GET(
 
     const dokumen = await db.dokumen.findUnique({
       where: { id },
-      include: { pegawai: true },
+      include: { Pegawai: true },
     });
 
     if (!dokumen) {
@@ -38,7 +38,7 @@ export async function GET(
       return NextResponse.json({ error: 'Tidak memiliki akses' }, { status: 403 });
     }
 
-    const pegawaiName = dokumen.pegawai.nama.replace(/\s+/g, '_');
+    const pegawaiName = dokumen.Pegawai.nama.replace(/\s+/g, '_');
 
     // Check if running in production/Vercel
     const isProduction = process.env.VERCEL === '1' || process.env.BLOB_READ_WRITE_TOKEN;

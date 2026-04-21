@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         include: {
           _count: {
-            select: { dokumen: true },
+            select: { Dokumen: true },
           },
         },
       }),
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         statusAktif: p.statusAktif,
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
-        totalDokumen: p._count.dokumen,
+        totalDokumen: p._count.Dokumen,
       })),
       pagination: {
         page,

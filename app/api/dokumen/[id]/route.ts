@@ -22,7 +22,7 @@ export async function GET(
     const dokumen = await db.dokumen.findUnique({
       where: { id },
       include: {
-        pegawai: true,
+        Pegawai: true,
       },
     });
 
@@ -133,7 +133,7 @@ export async function PUT(
         tembusan: tembusan?.trim() || null,
       },
       include: {
-        pegawai: true,
+        Pegawai: true,
       },
     });
 

@@ -30,7 +30,7 @@ export async function GET(
 
     const dokumen = await db.dokumen.findUnique({
       where: { id },
-      include: { pegawai: true },
+      include: { Pegawai: true },
     });
 
     if (!dokumen) {
@@ -119,7 +119,7 @@ export async function GET(
     };
 
     if (isDownload) {
-      const pegawaiName = dokumen.pegawai?.nama?.replace(/\s+/g, '_') || 'Unknown';
+      const pegawaiName = dokumen.Pegawai?.nama?.replace(/\s+/g, '_') || 'Unknown';
       headers['Content-Disposition'] = `attachment; filename="QRCode_${pegawaiName}.png"`;
     } else {
       headers['Content-Disposition'] = 'inline';

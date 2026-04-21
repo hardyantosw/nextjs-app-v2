@@ -32,7 +32,7 @@ export async function GET(
     const pegawai = await db.pegawai.findUnique({
       where: { id },
       include: {
-        dokumen: {
+        Dokumen: {
           orderBy: { createdAt: 'desc' },
           select: {
             id: true,
@@ -43,7 +43,7 @@ export async function GET(
           },
         },
         _count: {
-          select: { dokumen: true },
+          select: { Dokumen: true },
         },
       },
     });
@@ -66,8 +66,8 @@ export async function GET(
         statusAktif: pegawai.statusAktif,
         createdAt: pegawai.createdAt,
         updatedAt: pegawai.updatedAt,
-        totalDokumen: pegawai._count.dokumen,
-        dokumen: pegawai.dokumen,
+        totalDokumen: pegawai._count.Dokumen,
+        dokumen: pegawai.Dokumen,
       },
     });
   } catch (error) {
@@ -171,7 +171,7 @@ export async function DELETE(
       where: { id },
       include: {
         _count: {
-          select: { dokumen: true },
+          select: { Dokumen: true },
         },
       },
     });
@@ -184,11 +184,11 @@ export async function DELETE(
     }
 
     // Check if pegawai has associated documents
-    if (existingPegawai._count.dokumen > 0) {
+    if (existingPegawai._count.Dokumen > 0) {
       return NextResponse.json(
         {
           success: false,
-          message: `Pegawai tidak dapat dihapus karena masih memiliki ${existingPegawai._count.dokumen} dokumen terkait`,
+          message: `Pegawai tidak dapat dihapus karena masih memiliki ${existingPegawai._count.Dokumen} dokumen terkait`,
         },
         { status: 409 }
       );
