@@ -429,7 +429,7 @@ export default function PublicPage() {
             <div className="flex items-center gap-3">
               {pengaturan?.headerLogoPath ? (
                 <img
-                  src={`/api/pengaturan/header-logo/${pengaturan.headerLogoPath}`}
+                  src={pengaturan.headerLogoPath.startsWith('http') ? pengaturan.headerLogoPath : `/api/pengaturan/header-logo/${pengaturan.headerLogoPath}`}
                   alt="Logo"
                   className="w-9 h-9 rounded-lg object-contain bg-white/15 p-1"
                 />
@@ -485,7 +485,7 @@ export default function PublicPage() {
               >
                 {banner.imagePath ? (
                   <img
-                    src={`/api/banner/image/${banner.imagePath}`}
+                    src={banner.imagePath.startsWith('http') ? banner.imagePath : `/api/banner/image/${banner.imagePath}`}
                     alt={banner.judul}
                     className="w-full h-full object-cover"
                   />
@@ -702,7 +702,7 @@ export default function PublicPage() {
                   <div className="relative h-48 bg-muted overflow-hidden">
                     {berita.imagePath ? (
                       <img
-                        src={`/api/berita/image/${berita.imagePath}`}
+                        src={berita.imagePath.startsWith('http') ? berita.imagePath : `/api/berita/image/${berita.imagePath}`}
                         alt={berita.judul}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -763,7 +763,7 @@ export default function PublicPage() {
               <div className="flex items-center gap-3 mb-3">
                 {pengaturan?.headerLogoPath ? (
                   <img
-                    src={`/api/pengaturan/header-logo/${pengaturan.headerLogoPath}`}
+                    src={pengaturan.headerLogoPath.startsWith('http') ? pengaturan.headerLogoPath : `/api/pengaturan/header-logo/${pengaturan.headerLogoPath}`}
                     alt="Logo"
                     className="w-9 h-9 rounded-lg object-contain bg-white/15 p-1"
                   />
@@ -1127,7 +1127,7 @@ export default function PublicPage() {
               {selectedBerita.imagePath && (
                 <div className="rounded-lg overflow-hidden">
                   <img
-                    src={`/api/berita/image/${selectedBerita.imagePath}`}
+                    src={selectedBerita.imagePath.startsWith('http') ? selectedBerita.imagePath : `/api/berita/image/${selectedBerita.imagePath}`}
                     alt={selectedBerita.judul}
                     className="w-full h-auto max-h-72 object-cover"
                   />

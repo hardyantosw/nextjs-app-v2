@@ -108,7 +108,7 @@ export default function BannerPage() {
     setFormUrutan(banner.urutan);
     setFormAktif(banner.aktif);
     setFormImagePath(banner.imagePath);
-    setFormImagePreview(banner.imagePath ? `/api/banner/image/${banner.imagePath}` : null);
+    setFormImagePreview(banner.imagePath ? (banner.imagePath.startsWith('http') ? banner.imagePath : `/api/banner/image/${banner.imagePath}`) : null);
     setDialogOpen(true);
   }
 
@@ -245,7 +245,7 @@ export default function BannerPage() {
               <div className="h-40 bg-muted overflow-hidden">
                 {banner.imagePath ? (
                   <img
-                    src={`/api/banner/image/${banner.imagePath}`}
+                    src={banner.imagePath.startsWith('http') ? banner.imagePath : `/api/banner/image/${banner.imagePath}`}
                     alt={banner.judul}
                     className="w-full h-full object-cover"
                   />

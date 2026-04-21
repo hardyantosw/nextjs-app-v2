@@ -136,7 +136,7 @@ export default function BeritaPage() {
     setFormKategori(berita.kategori || '');
     setFormPublished(berita.published);
     setFormImagePath(berita.imagePath);
-    setFormImagePreview(berita.imagePath ? `/api/berita/image/${berita.imagePath}` : null);
+    setFormImagePreview(berita.imagePath ? (berita.imagePath.startsWith('http') ? berita.imagePath : `/api/berita/image/${berita.imagePath}`) : null);
     setDialogOpen(true);
   }
 
@@ -349,7 +349,7 @@ export default function BeritaPage() {
                   <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
                     {berita.imagePath ? (
                       <img
-                        src={`/api/berita/image/${berita.imagePath}`}
+                        src={berita.imagePath.startsWith('http') ? berita.imagePath : `/api/berita/image/${berita.imagePath}`}
                         alt={berita.judul}
                         className="w-full h-full object-cover"
                       />

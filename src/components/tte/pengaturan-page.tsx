@@ -76,12 +76,14 @@ export default function PengaturanPage() {
         setFormJudul(data.data?.judul || '');
         setFormSubJudul(data.data?.subJudul || '');
         if (data.data?.logoPath) {
-          setCurrentQrLogoUrl(`/api/pengaturan/logo/${data.data.logoPath}`);
+          const logoPath = data.data.logoPath;
+          setCurrentQrLogoUrl(logoPath.startsWith('http') ? logoPath : `/api/pengaturan/logo/${logoPath}`);
         } else {
           setCurrentQrLogoUrl(null);
         }
         if (data.data?.headerLogoPath) {
-          setCurrentHeaderLogoUrl(`/api/pengaturan/header-logo/${data.data.headerLogoPath}`);
+          const headerLogoPath = data.data.headerLogoPath;
+          setCurrentHeaderLogoUrl(headerLogoPath.startsWith('http') ? headerLogoPath : `/api/pengaturan/header-logo/${headerLogoPath}`);
         } else {
           setCurrentHeaderLogoUrl(null);
         }
@@ -146,7 +148,8 @@ export default function PengaturanPage() {
         const data = await res.json();
         toast.success('Logo QR Code berhasil diunggah');
         if (data.data?.logoPath) {
-          setCurrentQrLogoUrl(`/api/pengaturan/logo/${data.data.logoPath}?t=${Date.now()}`);
+          const logoPath = data.data.logoPath;
+          setCurrentQrLogoUrl(logoPath.startsWith('http') ? `${logoPath}?t=${Date.now()}` : `/api/pengaturan/logo/${logoPath}?t=${Date.now()}`);
         }
         handleQrClearFile();
         fetchPengaturan();
@@ -200,7 +203,8 @@ export default function PengaturanPage() {
         const data = await res.json();
         toast.success('Logo header berhasil diunggah');
         if (data.data?.headerLogoPath) {
-          setCurrentHeaderLogoUrl(`/api/pengaturan/header-logo/${data.data.headerLogoPath}?t=${Date.now()}`);
+          const headerLogoPath = data.data.headerLogoPath;
+          setCurrentHeaderLogoUrl(headerLogoPath.startsWith('http') ? `${headerLogoPath}?t=${Date.now()}` : `/api/pengaturan/header-logo/${headerLogoPath}?t=${Date.now()}`);
         }
         handleHeaderClearFile();
         fetchPengaturan();

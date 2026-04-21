@@ -103,7 +103,8 @@ function SidebarContent({
             setAppJudul(json.data.judul || 'Sistem TTE');
             setAppSubJudul(json.data.subJudul || 'Tanda Tangan Elektronik');
             if (json.data.headerLogoPath) {
-              setHeaderLogoUrl(`/api/pengaturan/header-logo/${json.data.headerLogoPath}`);
+              const logoPath = json.data.headerLogoPath;
+              setHeaderLogoUrl(logoPath.startsWith('http') ? logoPath : `/api/pengaturan/header-logo/${logoPath}`);
             }
           }
         }
