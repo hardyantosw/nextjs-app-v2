@@ -945,13 +945,13 @@ export default function PublicPage() {
                     <h4 className="text-sm font-semibold text-muted-foreground">Informasi Penandatangan</h4>
                     <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
                       <span className="text-muted-foreground">Nama</span>
-                      <span className="font-medium">{verifyData.pegawai.nama}</span>
+                      <span className="font-medium">{verifyData.pegawai?.nama || '-'}</span>
                       <span className="text-muted-foreground">NIP</span>
-                      <span className="font-mono text-xs">{verifyData.pegawai.nip}</span>
+                      <span className="font-mono text-xs">{verifyData.pegawai?.nip || '-'}</span>
                       <span className="text-muted-foreground">Jabatan</span>
-                      <span>{verifyData.pegawai.jabatan}</span>
+                      <span>{verifyData.pegawai?.jabatan || '-'}</span>
                       <span className="text-muted-foreground">OPD</span>
-                      <span>{verifyData.pegawai.opd}</span>
+                      <span>{verifyData.pegawai?.opd || '-'}</span>
                     </div>
                   </div>
                   <Separator />
@@ -1033,13 +1033,13 @@ export default function PublicPage() {
                     </h4>
                     <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
                       <span className="text-muted-foreground">Nama</span>
-                      <span className="font-medium">{verifyData.pegawai.nama}</span>
+                      <span className="font-medium">{verifyData.pegawai?.nama || '-'}</span>
                       <span className="text-muted-foreground">NIP</span>
-                      <span className="font-mono text-xs">{verifyData.pegawai.nip}</span>
+                      <span className="font-mono text-xs">{verifyData.pegawai?.nip || '-'}</span>
                       <span className="text-muted-foreground">Jabatan</span>
-                      <span>{verifyData.pegawai.jabatan}</span>
+                      <span>{verifyData.pegawai?.jabatan || '-'}</span>
                       <span className="text-muted-foreground">OPD</span>
-                      <span>{verifyData.pegawai.opd}</span>
+                      <span>{verifyData.pegawai?.opd || '-'}</span>
                     </div>
                   </div>
 

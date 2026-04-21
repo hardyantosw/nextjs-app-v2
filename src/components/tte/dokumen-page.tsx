@@ -639,10 +639,14 @@ export default function DokumenPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div>
-                            <p className="font-medium text-sm">{doc.pegawai.nama}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{doc.pegawai.nip}</p>
-                          </div>
+                          {doc.pegawai ? (
+                            <div>
+                              <p className="font-medium text-sm">{doc.pegawai.nama}</p>
+                              <p className="text-xs text-muted-foreground font-mono">{doc.pegawai.nip}</p>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell>{getValidityText(doc)}</TableCell>
                         <TableCell className="text-sm">

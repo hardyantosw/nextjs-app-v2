@@ -340,11 +340,11 @@ export default function UploadPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground">Penandatangan</p>
-                  <p className="font-medium">{result.pegawai.nama}</p>
+                  <p className="font-medium">{result.pegawai?.nama || '-'}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">NIP</p>
-                  <p className="font-medium">{result.pegawai.nip}</p>
+                  <p className="font-medium">{result.pegawai?.nip || '-'}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Jabatan</p>

@@ -200,16 +200,16 @@ export default function VerifikasiPage({ token }: VerifikasiPageProps) {
 
                 <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
                   <span className="text-muted-foreground">Nama</span>
-                  <span className="font-medium">{data.pegawai.nama}</span>
+                  <span className="font-medium">{data.pegawai?.nama || '-'}</span>
 
                   <span className="text-muted-foreground">NIP</span>
-                  <span className="font-mono text-xs">{data.pegawai.nip}</span>
+                  <span className="font-mono text-xs">{data.pegawai?.nip || '-'}</span>
 
                   <span className="text-muted-foreground">Jabatan</span>
-                  <span>{data.pegawai.jabatan}</span>
+                  <span>{data.pegawai?.jabatan || '-'}</span>
 
                   <span className="text-muted-foreground">OPD</span>
-                  <span>{data.pegawai.opd}</span>
+                  <span>{data.pegawai?.opd || '-'}</span>
                 </div>
               </div>
 
@@ -304,13 +304,13 @@ export default function VerifikasiPage({ token }: VerifikasiPageProps) {
 
               <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
                 <span className="text-muted-foreground">Nama</span>
-                <span className="font-medium">{data.pegawai.nama}</span>
+                <span className="font-medium">{data.pegawai?.nama || '-'}</span>
 
                 <span className="text-muted-foreground">NIP</span>
-                <span className="font-mono text-xs">{data.pegawai.nip}</span>
+                <span className="font-mono text-xs">{data.pegawai?.nip || '-'}</span>
 
                 <span className="text-muted-foreground">Jabatan</span>
-                <span>{data.pegawai.jabatan}</span>
+                <span>{data.pegawai?.jabatan || '-'}</span>
 
                 <span className="text-muted-foreground">OPD</span>
                 <span>{data.pegawai.opd}</span>
