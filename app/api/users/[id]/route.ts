@@ -48,7 +48,7 @@ export async function GET(
         nama: user.nama,
         role: user.role,
         pegawaiId: user.pegawaiId,
-        pegawai: user.Pegawai,
+        Pegawai: user.Pegawai,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
