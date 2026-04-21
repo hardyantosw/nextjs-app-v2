@@ -47,6 +47,7 @@ export function verifyPassword(password: string, storedHash: string): boolean {
  * Create a new session in the database and return the session token
  */
 export async function createSession(user: { id: string; username: string; nama: string; role: string; pegawaiId: string | null }): Promise<string> {
+  const id = crypto.randomBytes(16).toString('hex');
   const token = crypto.randomBytes(32).toString('hex');
   const now = new Date();
   const expiresAt = new Date(now.getTime() + SESSION_EXPIRY_MS);
@@ -54,6 +55,7 @@ export async function createSession(user: { id: string; username: string; nama: 
   try {
     await db.session.create({
       data: {
+        id,
         token,
         userId: user.id,
         username: user.username,
