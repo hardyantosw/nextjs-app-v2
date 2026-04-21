@@ -96,8 +96,8 @@ export async function GET(
                 const urlObj = new URL(existingStamp.pathFileTtd);
                 const qrUrl = `${urlObj.origin}/qrcodes/${existingStamp.tokenVerifikasi}.png`;
                 console.log('Attempting to fetch QR from:', qrUrl);
-                const qrFileExists = await fileExists(qrUrl);
-                if (qrFileExists) {
+                
+                try {
                   const qrBuffer = await downloadFile(qrUrl);
                   return new NextResponse(new Uint8Array(qrBuffer), {
                     headers: {
@@ -106,13 +106,15 @@ export async function GET(
                       'Cache-Control': 'no-cache',
                     },
                   });
+                } catch (downloadError) {
+                  console.warn('QR code not found, will regenerate:', downloadError);
+                  // Continue below to regenerate QR code
                 }
               }
             } else {
               // Local development - use relative path
               const qrPath = `qrcodes/${existingStamp.tokenVerifikasi}.png`;
-              const qrFileExists = await fileExists(qrPath);
-              if (qrFileExists) {
+              try {
                 const qrBuffer = await downloadFile(qrPath);
                 return new NextResponse(new Uint8Array(qrBuffer), {
                   headers: {
@@ -121,12 +123,15 @@ export async function GET(
                     'Cache-Control': 'no-cache',
                   },
                 });
+              } catch (downloadError) {
+                console.warn('QR code not found locally, will regenerate:', downloadError);
+                // Continue below to regenerate QR code
               }
             }
           }
         } catch (error) {
           console.warn('Failed to load QR code:', error);
-          // Continue below to generate QR code
+          // Continue below to regenerate QR code
         }
       } else {
         // Default: serve the composite TTE stamp

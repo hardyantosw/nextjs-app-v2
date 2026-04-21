@@ -312,13 +312,82 @@ export default function DokumenPage() {
   }
 
   // Handle Download Signed Document
-  function handleDownloadSigned(docId: string) {
-    window.open(`/api/dokumen/${docId}/download`, '_blank');
+  async function handleDownloadSigned(docId: string) {
+    try {
+      const response = await fetch(`/api/dokumen/${docId}/download`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Gagal mengunduh dokumen' }));
+        toast.error(error.error || 'Gagal mengunduh dokumen');
+        return;
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dokumen_${docId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Gagal mengunduh dokumen');
+    }
   }
 
   // Handle Download QR Code for existing doc
-  function handleDownloadStamp(docId: string) {
-    window.open(`/api/dokumen/${docId}/qrcode?download=true`, '_blank');
+  async function handleDownloadStamp(docId: string) {
+    try {
+      const response = await fetch(`/api/dokumen/${docId}/qrcode?download=true`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Gagal mengunduh QR Code' }));
+        toast.error(error.error || 'Gagal mengunduh QR Code');
+        return;
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `QRCode_${docId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Gagal mengunduh QR Code');
+    }
+  }
+
+  // Handle Download TTE Stamp for pending documents
+  async function handleDownloadTTEStamp(docId: string) {
+    try {
+      const response = await fetch(`/api/dokumen/${docId}/tte-stamp`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Gagal mengunduh TTE' }));
+        toast.error(error.error || 'Gagal mengunduh TTE');
+        return;
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `TTE_Stamp_${docId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('TTE berhasil diunduh');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Gagal mengunduh TTE');
+    }
   }
 
   // Format date
@@ -334,6 +403,14 @@ export default function DokumenPage() {
   // Get status badge
   function getStatusBadge(doc: Dokumen) {
     const isExpired = !doc.aktifSelamanya && doc.tanggalExpired && new Date() > new Date(doc.tanggalExpired);
+
+    if (doc.status === 'tte_stamp') {
+      return (
+        <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100">
+          <Stamp className="w-3 h-3" /> TTE Stamp
+        </Badge>
+      );
+    }
 
     if (doc.status === 'pending') {
       return (
@@ -562,15 +639,38 @@ export default function DokumenPage() {
                                 <Download className="size-4" />
                               </Button>
                             )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              onClick={() => handleDownloadStamp(doc.id)}
-                              title="Unduh TTE Stamp"
-                            >
-                              <Stamp className="size-4" />
-                            </Button>
+                            {doc.status === 'pending' || doc.status === 'tte_stamp' ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-8 text-emerald-600 hover:text-emerald-700"
+                                  onClick={() => handleDownloadTTEStamp(doc.id)}
+                                  title="Unduh Gambar TTE"
+                                >
+                                  <Stamp className="size-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-8"
+                                  onClick={() => handleDownloadStamp(doc.id)}
+                                  title="Unduh QR Code"
+                                >
+                                  <QrCode className="size-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => handleDownloadStamp(doc.id)}
+                                title="Unduh QR Code"
+                              >
+                                <QrCode className="size-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"

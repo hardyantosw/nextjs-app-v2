@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession, getTokenFromRequest } from '@/lib/auth';
-import fs from 'fs';
-import path from 'path';
+import { downloadFile, fileExists } from '@/lib/storage';
 
 /**
  * GET /api/dokumen/[id]/qrcode
- * Serve the QR code image for a signed document
+ * Serve the QR code image for a signed document or TTE stamp
  * Query params:
  *   - download=true: Sets Content-Disposition to attachment (download) instead of inline
  */
@@ -43,22 +42,48 @@ export async function GET(
       return NextResponse.json({ error: 'Tidak memiliki akses' }, { status: 403 });
     }
 
-    // QR code is saved at uploads/qrcodes/{tokenVerifikasi}.png
-    const qrPath = path.join(
-      process.cwd(),
-      'uploads',
-      'qrcodes',
-      `${dokumen.tokenVerifikasi}.png`
-    );
+    // Check if running in production/Vercel
+    const isProduction = process.env.VERCEL === '1' || process.env.BLOB_READ_WRITE_TOKEN;
 
-    if (!fs.existsSync(qrPath)) {
+    let qrBuffer: Buffer | null = null;
+
+    if (isProduction && dokumen.pathFileTtd && dokumen.pathFileTtd.startsWith('http')) {
+      // In production, construct QR code URL from the TTE stamp URL
+      // pathFileTtd is like: https://xxx.public.blob.vercel-storage.com/tte-stamps/abc.png
+      // QR code is at: https://xxx.public.blob.vercel-storage.com/qrcodes/abc.png
+      const urlObj = new URL(dokumen.pathFileTtd);
+      const qrUrl = `${urlObj.origin}/qrcodes/${dokumen.tokenVerifikasi}.png`;
+      
+      try {
+        qrBuffer = await downloadFile(qrUrl);
+      } catch (error) {
+        console.warn('QR code not found at:', qrUrl, error);
+        // QR code doesn't exist, return error
+        return NextResponse.json(
+          { error: 'QR Code tidak ditemukan di server' },
+          { status: 404 }
+        );
+      }
+    } else {
+      // Local development - use relative path
+      const qrPath = `qrcodes/${dokumen.tokenVerifikasi}.png`;
+      
+      if (await fileExists(qrPath)) {
+        qrBuffer = await downloadFile(qrPath);
+      } else {
+        return NextResponse.json(
+          { error: 'QR Code tidak ditemukan di server' },
+          { status: 404 }
+        );
+      }
+    }
+
+    if (!qrBuffer) {
       return NextResponse.json(
         { error: 'QR Code tidak ditemukan di server' },
         { status: 404 }
       );
     }
-
-    const fileBuffer = fs.readFileSync(qrPath);
 
     // Check if download query param is set
     const url = new URL(request.url);
@@ -67,7 +92,7 @@ export async function GET(
     const headers: Record<string, string> = {
       'Content-Type': 'image/png',
       'Cache-Control': 'public, max-age=31536000, immutable',
-      'Content-Length': fileBuffer.length.toString(),
+      'Content-Length': qrBuffer.length.toString(),
     };
 
     if (isDownload) {
@@ -76,7 +101,7 @@ export async function GET(
       headers['Content-Disposition'] = 'inline';
     }
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(qrBuffer), {
       status: 200,
       headers,
     });

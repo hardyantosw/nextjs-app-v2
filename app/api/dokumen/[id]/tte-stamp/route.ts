@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession, getTokenFromRequest } from '@/lib/auth';
-import fs from 'fs';
-import path from 'path';
+import { downloadFile, fileExists } from '@/lib/storage';
 
 /**
  * GET /api/dokumen/[id]/tte-stamp
@@ -39,63 +38,49 @@ export async function GET(
       return NextResponse.json({ error: 'Tidak memiliki akses' }, { status: 403 });
     }
 
-    // Look for the TTE stamp image
-    // First check the tte-stamps directory using token
-    const tteStampPath = path.join(
-      process.cwd(),
-      'uploads',
-      'tte-stamps',
-      `${dokumen.tokenVerifikasi}.png`
-    );
+    const pegawaiName = dokumen.pegawai.nama.replace(/\s+/g, '_');
 
-    if (fs.existsSync(tteStampPath)) {
-      const fileBuffer = fs.readFileSync(tteStampPath);
-      const pegawaiName = dokumen.pegawai.nama.replace(/\s+/g, '_');
-      return new NextResponse(fileBuffer, {
-        headers: {
-          'Content-Type': 'image/png',
-          'Content-Disposition': `attachment; filename="TTE_${pegawaiName}.png"`,
-          'Cache-Control': 'no-cache',
-        },
-      });
+    // Check if running in production/Vercel
+    const isProduction = process.env.VERCEL === '1' || process.env.BLOB_READ_WRITE_TOKEN;
+
+    let tteBuffer: Buffer | null = null;
+
+    // In production, pathFileTtd contains the full URL to the TTE stamp
+    if (isProduction && dokumen.pathFileTtd && dokumen.pathFileTtd.startsWith('http')) {
+      try {
+        tteBuffer = await downloadFile(dokumen.pathFileTtd);
+      } catch (error) {
+        console.warn('TTE stamp not found at:', dokumen.pathFileTtd, error);
+      }
+    } else {
+      // Local development - check multiple paths
+      const paths = [
+        `tte-stamps/${dokumen.tokenVerifikasi}.png`,
+        `tte-images/${dokumen.tokenVerifikasi}.png`,
+      ];
+
+      for (const p of paths) {
+        if (await fileExists(p)) {
+          tteBuffer = await downloadFile(p);
+          break;
+        }
+      }
     }
 
-    // Fallback: check pathFileTtd if it's a TTE stamp (pending status)
-    if (dokumen.status === 'pending' && dokumen.pathFileTtd && fs.existsSync(dokumen.pathFileTtd)) {
-      const fileBuffer = fs.readFileSync(dokumen.pathFileTtd);
-      const pegawaiName = dokumen.pegawai.nama.replace(/\s+/g, '_');
-      return new NextResponse(fileBuffer, {
-        headers: {
-          'Content-Type': 'image/png',
-          'Content-Disposition': `attachment; filename="TTE_${pegawaiName}.png"`,
-          'Cache-Control': 'no-cache',
-        },
-      });
+    if (!tteBuffer) {
+      return NextResponse.json(
+        { error: 'TTE stamp image tidak ditemukan di server' },
+        { status: 404 }
+      );
     }
 
-    // Also check the old tte-images directory
-    const oldTtePath = path.join(
-      process.cwd(),
-      'uploads',
-      'tte-images',
-      `${dokumen.tokenVerifikasi}.png`
-    );
-    if (fs.existsSync(oldTtePath)) {
-      const fileBuffer = fs.readFileSync(oldTtePath);
-      const pegawaiName = dokumen.pegawai.nama.replace(/\s+/g, '_');
-      return new NextResponse(fileBuffer, {
-        headers: {
-          'Content-Type': 'image/png',
-          'Content-Disposition': `attachment; filename="TTE_${pegawaiName}.png"`,
-          'Cache-Control': 'no-cache',
-        },
-      });
-    }
-
-    return NextResponse.json(
-      { error: 'TTE stamp image tidak ditemukan di server' },
-      { status: 404 }
-    );
+    return new NextResponse(new Uint8Array(tteBuffer), {
+      headers: {
+        'Content-Type': 'image/png',
+        'Content-Disposition': `attachment; filename="TTE_${pegawaiName}.png"`,
+        'Cache-Control': 'no-cache',
+      },
+    });
   } catch (error) {
     console.error('Error serving TTE stamp:', error);
     return NextResponse.json(
